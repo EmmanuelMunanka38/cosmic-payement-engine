@@ -1,0 +1,255 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum KycStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum CurrencyCode {
+  USD
+  EUR
+  GBP
+  KES
+  NGN
+  UGX
+  GHS
+  TZS
+  XAF
+  XOF
+  RWF
+  ZMW
+  MAD
+  ZAR
+}
+
+enum TransactionType {
+  SEND
+  RECEIVE
+  CROSS_BORDER_SEND
+  CROSS_BORDER_RECEIVE
+  PAYOUT
+  REFUND
+  FEE
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  REFUNDED
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentProvider {
+  STRIPE
+  MPESA
+  MTN_MOMO
+  AIRTEL_MONEY
+  ORANGE_MONEY
+  WAVE
+  PAYSTACK
+  FLUTTERWAVE
+}
+
+enum WebhookEventStatus {
+  RECEIVED
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+model User {
+  id                String           @id @default(uuid())
+  email             String           @unique
+  phone             String           @unique
+  passwordHash      String
+  firstName         String
+  lastName          String
+  role              UserRole         @default(USER)
+  kycStatus         KycStatus        @default(UNVERIFIED)
+  isActive          Boolean          @default(true)
+  twoFactorEnabled  Boolean          @default(false)
+  country           String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  refreshTokens     RefreshToken[]
+  wallets           Wallet[]
+  transactions      Transaction[]
+  apiKeys           ApiKey[]
+  kycDocuments      KycDocument[]
+}
+
+model RefreshToken {
+  id          String      @id @default(uuid())
+  token       String      @unique
+  userId      String
+  deviceInfo  String?
+  ipAddress   String?
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime    @default(now())
+
+  user        User        @relation(fields: [userId], references: [id])
+}
+
+model Wallet {
+  id               String       @id @default(uuid())
+  userId           String
+  currency         CurrencyCode
+  balance          Decimal      @default(0)
+  ledgerBalance    Decimal      @default(0)
+  availableBalance Decimal      @default(0)
+  isActive         Boolean      @default(true)
+  version          Int          @default(1)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  user             User         @relation(fields: [userId], references: [id])
+
+  @@unique([userId, currency])
+  @@index([userId])
+}
+
+model Transaction {
+  id                  String                  @id @default(uuid())
+  reference           String                  @unique
+  idempotencyKey      String                  @unique
+  userId              String
+  type                TransactionType
+  status              TransactionStatus       @default(PENDING)
+  sourceCurrency      CurrencyCode
+  destinationCurrency CurrencyCode
+  sourceAmount        Decimal
+  destinationAmount   Decimal
+  fee                 Decimal                 @default(0)
+  fxRate              Decimal?
+  provider            PaymentProvider?
+  providerTransactionId String?
+  senderPhone         String?
+  recipientPhone      String?
+  recipientName       String?
+  recipientProvider   PaymentProvider?
+  description         String?
+  metadata            Json?
+  failureReason       String?
+  completedAt         DateTime?
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+
+  user                User                    @relation(fields: [userId], references: [id])
+  statusHistory       TransactionStatusHistory[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([reference])
+  @@index([idempotencyKey])
+  @@index([createdAt])
+}
+
+model TransactionStatusHistory {
+  id              String            @id @default(uuid())
+  transactionId   String
+  fromStatus      TransactionStatus
+  toStatus        TransactionStatus
+  reason          String?
+  createdAt       DateTime          @default(now())
+
+  transaction     Transaction       @relation(fields: [transactionId], references: [id])
+
+  @@index([transactionId])
+}
+
+model ExchangeRate {
+  id           String       @id @default(uuid())
+  fromCurrency CurrencyCode
+  toCurrency   CurrencyCode
+  rate         Decimal
+  bid          Decimal
+  ask          Decimal
+  source       String       @default("open-exchange-rates")
+  validUntil   DateTime
+  createdAt    DateTime     @default(now())
+
+  @@unique([fromCurrency, toCurrency])
+  @@index([fromCurrency, toCurrency])
+}
+
+model PaymentProviderConfig {
+  id          String          @id @default(uuid())
+  provider    PaymentProvider
+  environment String          @default("sandbox")
+  config      Json
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@unique([provider, environment])
+}
+
+model WebhookEvent {
+  id            String              @id @default(uuid())
+  provider      PaymentProvider
+  eventType     String
+  rawBody       Json
+  headers       Json
+  status        WebhookEventStatus  @default(RECEIVED)
+  processedAt   DateTime?
+  failureReason String?
+  createdAt     DateTime            @default(now())
+
+  @@index([provider, status])
+  @@index([createdAt])
+}
+
+model ApiKey {
+  id            String    @id @default(uuid())
+  userId        String
+  name          String
+  keyPrefix     String
+  keyHash       String
+  lastCharacters String
+  scopes        String[]
+  expiresAt     DateTime?
+  isActive      Boolean   @default(true)
+  lastUsedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([keyHash])
+}
+
+model KycDocument {
+  id          String    @id @default(uuid())
+  userId      String
+  documentType String
+  documentUrl String
+  status      KycStatus @default(PENDING)
+  verifiedAt  DateTime?
+  rejectedReason String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
