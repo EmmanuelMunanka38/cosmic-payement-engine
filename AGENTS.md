@@ -1,6 +1,7 @@
-# AfriPay Gateway — AI Agent Rules
+# Cosmic Payment — AI Agent Rules
 
 ## Project Overview
+
 Cross-border payment gateway for Africa (like Nala + Stripe + Mobile Money).  
 Monolithic TypeScript backend with Express, Prisma, PostgreSQL, Redis, BullMQ.
 
@@ -14,6 +15,7 @@ Monolithic TypeScript backend with Express, Prisma, PostgreSQL, Redis, BullMQ.
 - **Validation**: Zod schemas in `<module>.validation.ts`, never inline
 
 ## Architecture Rules
+
 1. Payment provider adapters implement interfaces from `paymentProviders/interfaces/`
 2. All provider-specific logic stays in its own folder under `paymentProviders/`
 3. Stripe is abstracted behind `CardProvider` interface — app never imports stripe SDK outside `paymentProviders/stripe/`
@@ -22,6 +24,7 @@ Monolithic TypeScript backend with Express, Prisma, PostgreSQL, Redis, BullMQ.
 6. BullMQ queues for: async webhook delivery, payout settlement, notifications, rate refresh
 
 ## Module Structure
+
 ```
 src/modules/<module>/
   <module>.controller.ts   — route handlers (thin, calls service)
@@ -33,12 +36,15 @@ src/modules/<module>/
 ```
 
 ## Response Format
+
 Always use `utils/response.ts` helpers:
+
 - `success(res, data, meta?)` — `{ status: "success", data, meta }`
 - `paginated(res, data, cursor, hasMore, total)` — `{ status: "success", data, meta: { cursor, hasMore, total } }`
 - Errors are thrown as `AppError` subclasses, caught by global error handler
 
 ## Testing
+
 - Vitest + Supertest
 - Unit tests for services (mock repositories)
 - Integration tests for controllers
@@ -46,5 +52,10 @@ Always use `utils/response.ts` helpers:
 - Coverage minimum: 80% service layer
 
 ## Git
+
 - No commits without explicit user request
 - Descriptive commit messages focusing on "why"
+
+
+## major rule  in fintech 
+- a single error on the logic some does not get a meal tonight 

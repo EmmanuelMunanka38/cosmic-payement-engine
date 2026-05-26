@@ -8,7 +8,7 @@ const app = createApp();
 const config = getConfig();
 
 const server = app.listen(config.PORT, () => {
-  logger.info({ port: config.PORT, env: config.NODE_ENV }, `AfriPay Gateway started`);
+  logger.info({ port: config.PORT, env: config.NODE_ENV }, `Cosmic Payment started`);
 });
 
 process.on('SIGTERM', () => {

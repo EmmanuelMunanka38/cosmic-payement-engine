@@ -10,10 +10,10 @@ async function main() {
   const adminPassword = await bcrypt.hash('admin123', 12);
 
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@afripay.dev' },
+    where: { email: 'admin@cosmic-payment.dev' },
     update: {},
     create: {
-      email: 'admin@afripay.dev',
+      email: 'admin@cosmic-payment.dev',
       phone: '+254700000000',
       passwordHash: adminPassword,
       firstName: 'Admin',
@@ -29,10 +29,10 @@ async function main() {
   const userPassword = await bcrypt.hash('user123', 12);
 
   const testUser = await prisma.user.upsert({
-    where: { email: 'user@afripay.dev' },
+    where: { email: 'user@cosmic-payment.dev' },
     update: {},
     create: {
-      email: 'user@afripay.dev',
+      email: 'user@cosmic-payment.dev',
       phone: '+254712345678',
       passwordHash: userPassword,
       firstName: 'Test',
@@ -45,7 +45,13 @@ async function main() {
 
   console.log(`Test user created: ${testUser.email}`);
 
-  const currencies = [CurrencyCode.USD, CurrencyCode.KES, CurrencyCode.UGX, CurrencyCode.GHS, CurrencyCode.NGN];
+  const currencies = [
+    CurrencyCode.USD,
+    CurrencyCode.KES,
+    CurrencyCode.UGX,
+    CurrencyCode.GHS,
+    CurrencyCode.NGN,
+  ];
 
   for (const currency of currencies) {
     await prisma.wallet.upsert({
@@ -68,8 +74,8 @@ async function main() {
   console.log('Exchange rates seeded');
 
   console.log('\n--- Test Credentials ---');
-  console.log('Admin: admin@afripay.dev / admin123');
-  console.log('User:  user@afripay.dev  / user123');
+  console.log('Admin: admin@cosmic-payment.dev / admin123');
+  console.log('User:  user@cosmic-payment.dev  / user123');
   console.log('-----------------------\n');
 }
 

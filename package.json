@@ -1,5 +1,5 @@
 {
-  "name": "afripay-gateway",
+  "name": "cosmic-payment",
   "version": "0.1.0",
   "description": "Cross-border payment gateway for Africa — Nala-like with Stripe + Mobile Money",
   "private": true,
