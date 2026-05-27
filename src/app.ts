@@ -21,6 +21,7 @@ import apiKeyRoutes from './modules/apiKeys/apiKeys.routes.js';
 import stripeRoutes from './modules/paymentProviders/stripe/stripe.routes.js';
 import mpesaRoutes from './modules/paymentProviders/mpesa/mpesa.routes.js';
 import networkRoutes from './modules/paymentProviders/phone-network-detector.js';
+import sandboxRoutes from './modules/sandbox/sandbox.routes.js';
 
 export function createApp() {
   const config = getConfig();
@@ -28,6 +29,7 @@ export function createApp() {
 
   app.use(helmet());
   app.use(cors({ origin: config.CORS_ORIGINS.split(','), credentials: true }));
+  app.use(express.json());
   app.use(requestLogger);
   app.use(rateLimiter(60000, 100));
 
@@ -47,6 +49,7 @@ export function createApp() {
   app.use('/api/v1/admin', adminRoutes);
   app.use('/api/v1/api-keys', apiKeyRoutes);
   app.use('/api/v1/providers', networkRoutes);
+  app.use('/api/v1/sandbox', sandboxRoutes);
 
   app.use(stripeRoutes);
   app.use(mpesaRoutes);

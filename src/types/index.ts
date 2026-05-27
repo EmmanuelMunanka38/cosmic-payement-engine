@@ -55,6 +55,7 @@ export interface CreateTransactionInput {
   description?: string;
   idempotencyKey: string;
   metadata?: Record<string, unknown>;
+  environment?: string;
 }
 
 export interface NetworkDetectionResult {

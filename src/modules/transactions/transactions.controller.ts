@@ -9,7 +9,13 @@ export async function sendInternal(req: Request, res: Response, next: NextFuncti
   try {
     const user = (req as any).user;
     const idempotencyKey = (req as any).idempotencyKey;
-    const result = await transactionService.sendInternal(user, req.body, idempotencyKey);
+    const environment = (req as any).environment;
+    const result = await transactionService.sendInternal(
+      user,
+      req.body,
+      idempotencyKey,
+      environment,
+    );
     await cacheIdempotencyResponse(req, result);
     sendSuccess(res, result, 201);
   } catch (err) {
@@ -26,7 +32,13 @@ export async function crossBorderSend(
     const user = (req as any).user;
     const data = crossBorderSchema.parse(req.body);
     const idempotencyKey = (req as any).idempotencyKey;
-    const result = await transactionService.crossBorderSend(user, data, idempotencyKey);
+    const environment = (req as any).environment;
+    const result = await transactionService.crossBorderSend(
+      user,
+      data,
+      idempotencyKey,
+      environment,
+    );
     await cacheIdempotencyResponse(req, result);
     sendSuccess(res, result, 201);
   } catch (err) {
@@ -39,7 +51,8 @@ export async function payIn(req: Request, res: Response, next: NextFunction): Pr
     const user = (req as any).user;
     const data = payInSchema.parse(req.body);
     const idempotencyKey = (req as any).idempotencyKey;
-    const result = await transactionService.payIn(user, data, idempotencyKey);
+    const environment = (req as any).environment;
+    const result = await transactionService.payIn(user, data, idempotencyKey, environment);
     await cacheIdempotencyResponse(req, result);
     sendSuccess(res, result, 201);
   } catch (err) {
@@ -52,7 +65,8 @@ export async function payOut(req: Request, res: Response, next: NextFunction): P
     const user = (req as any).user;
     const data = payOutSchema.parse(req.body);
     const idempotencyKey = (req as any).idempotencyKey;
-    const result = await transactionService.payOut(user, data, idempotencyKey);
+    const environment = (req as any).environment;
+    const result = await transactionService.payOut(user, data, idempotencyKey, environment);
     await cacheIdempotencyResponse(req, result);
     sendSuccess(res, result, 201);
   } catch (err) {

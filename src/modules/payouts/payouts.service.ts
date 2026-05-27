@@ -8,14 +8,17 @@ export async function createPayout(
   userId: string,
   input: CreatePayoutInput,
   idempotencyKey: string,
+  environment?: string,
 ) {
   const existing = await payoutRepo.checkIdempotency(idempotencyKey);
   if (existing) return existing;
 
-  const wallet = await walletRepo.getWalletByCurrency(userId, input.currency);
+  const wallet = await walletRepo.getWalletByCurrency(
+    userId,
+    input.currency,
+    environment ?? 'PRODUCTION',
+  );
   await walletRepo.debitWallet(wallet.id, input.amount, wallet.version);
-
-  const provider = providerRegistry.getMobileProvider(input.recipientProvider);
 
   const transaction = await payoutRepo.createTransaction({
     reference: `PO-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -30,7 +33,14 @@ export async function createPayout(
     recipientName: input.recipientName,
     recipientProvider: input.recipientProvider,
     description: input.description,
+    environment,
   });
+
+  if (environment === 'SANDBOX') {
+    return payoutRepo.updateTransactionSuccess(transaction.id, `SIM_PO_${Date.now()}`);
+  }
+
+  const provider = providerRegistry.getMobileProvider(input.recipientProvider);
 
   try {
     const result = await provider.disburse({

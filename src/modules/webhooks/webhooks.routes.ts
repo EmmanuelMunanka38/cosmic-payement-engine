@@ -4,6 +4,21 @@ import { receiveWebhook } from './webhooks.controller.js';
 
 const router = Router();
 
+/**
+ * @openapi
+ * /webhooks/{provider}:
+ *   post:
+ *     tags: [Webhooks]
+ *     summary: Receive provider webhook callback
+ *     parameters:
+ *       - in: path
+ *         name: provider
+ *         required: true
+ *         schema: { type: string, enum: [stripe, mpesa, mtn-momo, airtel, orange-money, wave] }
+ *     responses:
+ *       200:
+ *         description: Webhook received
+ */
 router.post('/stripe', receiveWebhook(PaymentProvider.STRIPE));
 router.post('/mpesa', receiveWebhook(PaymentProvider.MPESA));
 router.post('/mtn-momo', receiveWebhook(PaymentProvider.MTN_MOMO));

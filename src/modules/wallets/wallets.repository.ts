@@ -2,9 +2,13 @@ import { CurrencyCode } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import { NotFoundError, ValidationError } from '../../utils/errors.js';
 
-export async function createWallet(userId: string, currency: CurrencyCode) {
+export async function createWallet(
+  userId: string,
+  currency: CurrencyCode,
+  environment: string = 'PRODUCTION',
+) {
   const existing = await prisma.wallet.findUnique({
-    where: { userId_currency: { userId, currency } },
+    where: { userId_currency_environment: { userId, currency, environment: environment as any } },
   });
 
   if (existing) throw new ValidationError(`Wallet for ${currency} already exists`);
@@ -13,6 +17,7 @@ export async function createWallet(userId: string, currency: CurrencyCode) {
     data: {
       userId,
       currency,
+      environment: environment as any,
       balance: 0,
       ledgerBalance: 0,
       availableBalance: 0,
@@ -24,7 +29,7 @@ export async function createWallet(userId: string, currency: CurrencyCode) {
 
 export async function getWallets(userId: string) {
   return prisma.wallet.findMany({
-    where: { userId, isActive: true },
+    where: { userId, isActive: true, environment: 'PRODUCTION' as any },
     orderBy: { createdAt: 'desc' },
   });
 }
@@ -38,13 +43,17 @@ export async function getWalletById(walletId: string, userId: string) {
   return wallet;
 }
 
-export async function getWalletByCurrency(userId: string, currency: CurrencyCode) {
+export async function getWalletByCurrency(
+  userId: string,
+  currency: CurrencyCode,
+  environment: string = 'PRODUCTION',
+) {
   let wallet = await prisma.wallet.findUnique({
-    where: { userId_currency: { userId, currency } },
+    where: { userId_currency_environment: { userId, currency, environment: environment as any } },
   });
 
   if (!wallet) {
-    wallet = await createWallet(userId, currency);
+    wallet = await createWallet(userId, currency, environment);
   }
 
   return wallet;

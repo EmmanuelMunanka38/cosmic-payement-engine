@@ -11,7 +11,8 @@ export async function createPayout(req: Request, res: Response, next: NextFuncti
     const user = (req as unknown as { user: JwtPayload }).user;
     const data = createPayoutSchema.parse(req.body);
     const idempotencyKey = (req as unknown as { idempotencyKey: string }).idempotencyKey;
-    const payout = await payoutService.createPayout(user.userId, data, idempotencyKey);
+    const environment = (req as any).environment;
+    const payout = await payoutService.createPayout(user.userId, data, idempotencyKey, environment);
     await cacheIdempotencyResponse(req, payout);
     sendSuccess(res, payout, 201);
   } catch (err) {

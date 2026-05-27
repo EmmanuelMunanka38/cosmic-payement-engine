@@ -19,6 +19,7 @@ export async function sendInternal(
     description?: string;
   },
   idempotencyKey: string,
+  environment?: string,
 ) {
   const existing = await transactionRepo.checkIdempotency(idempotencyKey);
   if (existing) return existing;
@@ -48,6 +49,7 @@ export async function sendInternal(
     destinationAmount: input.amount,
     description: input.description,
     idempotencyKey,
+    environment,
   });
 
   await transactionRepo.updateTransactionStatus(transaction.id, TransactionStatus.SUCCESS);
@@ -59,6 +61,7 @@ export async function crossBorderSend(
   user: JwtPayload,
   input: CrossBorderInput,
   idempotencyKey: string,
+  environment?: string,
 ) {
   const existing = await transactionRepo.checkIdempotency(idempotencyKey);
   if (existing) return existing;
@@ -97,6 +100,7 @@ export async function crossBorderSend(
     recipientProvider: provider,
     description: input.description,
     idempotencyKey,
+    environment,
   });
 
   await transactionRepo.updateTransactionStatus(transaction.id, TransactionStatus.PROCESSING);
@@ -104,7 +108,12 @@ export async function crossBorderSend(
   return transactionRepo.getTransactionById(transaction.id);
 }
 
-export async function payIn(user: JwtPayload, input: PayInInput, idempotencyKey: string) {
+export async function payIn(
+  user: JwtPayload,
+  input: PayInInput,
+  idempotencyKey: string,
+  environment?: string,
+) {
   const existing = await transactionRepo.checkIdempotency(idempotencyKey);
   if (existing) return existing;
 
@@ -117,12 +126,18 @@ export async function payIn(user: JwtPayload, input: PayInInput, idempotencyKey:
     destinationAmount: input.amount,
     provider: 'STRIPE' as any,
     idempotencyKey,
+    environment,
   });
 
   return transaction;
 }
 
-export async function payOut(user: JwtPayload, input: PayOutInput, idempotencyKey: string) {
+export async function payOut(
+  user: JwtPayload,
+  input: PayOutInput,
+  idempotencyKey: string,
+  environment?: string,
+) {
   const existing = await transactionRepo.checkIdempotency(idempotencyKey);
   if (existing) return existing;
 
@@ -141,6 +156,7 @@ export async function payOut(user: JwtPayload, input: PayOutInput, idempotencyKe
     recipientProvider: input.recipientProvider,
     description: input.description,
     idempotencyKey,
+    environment,
   });
 
   await transactionRepo.updateTransactionStatus(transaction.id, TransactionStatus.PROCESSING);

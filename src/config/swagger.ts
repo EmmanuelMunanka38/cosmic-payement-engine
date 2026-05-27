@@ -10,7 +10,7 @@ const options: swaggerJsdoc.Options = {
       version: '1.0.0',
       description: 'Cross-border payment gateway for Africa',
     },
-    servers: [{ url: '/api/v1', description: 'API v1' }],
+    servers: [{ url: 'http://localhost:3000', description: 'Local dev' }],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -25,8 +25,12 @@ const options: swaggerJsdoc.Options = {
         },
       },
     },
+    security: [{ bearerAuth: [] }],
   },
-  apis: ['./src/modules/**/*.routes.ts'],
+  apis: [
+    './src/modules/**/*.routes.ts',
+    './src/modules/paymentProviders/phone-network-detector.ts',
+  ],
 };
 
 export function setupSwagger(app: Application): void {
