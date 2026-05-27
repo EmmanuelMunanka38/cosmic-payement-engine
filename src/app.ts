@@ -28,6 +28,7 @@ export function createApp() {
 
   app.use(helmet());
   app.use(cors({ origin: config.CORS_ORIGINS.split(','), credentials: true }));
+  app.use(express.json());
   app.use(requestLogger);
   app.use(rateLimiter(60000, 100));
 
