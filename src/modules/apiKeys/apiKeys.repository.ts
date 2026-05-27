@@ -1,7 +1,7 @@
-import { prisma } from '../../lib/prisma.js';
+import { prisma, getPrisma } from '../../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 
-function generateApiKeyValue(): {
+function generateApiKeyValue(environment: string = 'PRODUCTION'): {
   fullKey: string;
   prefix: string;
   hash: string;
@@ -12,7 +12,8 @@ function generateApiKeyValue(): {
     { length: 40 },
     () => chars[Math.floor(Math.random() * chars.length)],
   ).join('');
-  const fullKey = `afp_${random}`;
+  const prefixStr = environment === 'SANDBOX' ? 'sand_' : 'afp_';
+  const fullKey = `${prefixStr}${random}`;
   return {
     fullKey,
     prefix: fullKey.slice(0, 8),
@@ -26,10 +27,13 @@ export async function createApiKey(
   name: string,
   scopes: string[],
   expiresAt?: Date,
+  environment: string = 'PRODUCTION',
+  _prisma?: any,
 ) {
-  const { fullKey, prefix, hash, lastChars } = generateApiKeyValue();
+  const db = _prisma || prisma;
+  const { fullKey, prefix, hash, lastChars } = generateApiKeyValue(environment);
 
-  await prisma.apiKey.create({
+  await db.apiKey.create({
     data: {
       userId,
       name,
@@ -37,6 +41,7 @@ export async function createApiKey(
       keyHash: hash,
       lastCharacters: lastChars,
       scopes,
+      environment: environment as any,
       ...(expiresAt ? { expiresAt } : {}),
     },
   });
@@ -47,6 +52,7 @@ export async function createApiKey(
     scopes,
     prefix,
     lastCharacters: lastChars,
+    environment,
     warning: 'Save this API key — it will not be shown again',
   };
 }
