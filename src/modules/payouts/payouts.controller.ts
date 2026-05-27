@@ -4,12 +4,15 @@ import * as payoutService from './payouts.service.js';
 import { createPayoutSchema } from './payouts.validation.js';
 import { sendSuccess } from '../../utils/response.js';
 import { parsePagination } from '../../utils/pagination.js';
+import { cacheIdempotencyResponse } from '../../middleware/idempotency.js';
 
 export async function createPayout(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const user = (req as unknown as { user: JwtPayload }).user;
     const data = createPayoutSchema.parse(req.body);
-    const payout = await payoutService.createPayout(user.userId, data);
+    const idempotencyKey = (req as unknown as { idempotencyKey: string }).idempotencyKey;
+    const payout = await payoutService.createPayout(user.userId, data, idempotencyKey);
+    await cacheIdempotencyResponse(req, payout);
     sendSuccess(res, payout, 201);
   } catch (err) {
     next(err);

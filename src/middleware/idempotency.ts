@@ -1,13 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import Redis from 'ioredis';
-import { getConfig } from '../config/index.js';
-import { IdempotencyError } from '../utils/errors.js';
-
-const redis = new Redis(getConfig().REDIS_URL);
+import { redis } from '../lib/redis.js';
+import { AppError, IdempotencyError } from '../utils/errors.js';
 
 const IDEMPOTENCY_TTL = 86400;
 
-export async function idempotency(req: Request, _res: Response, next: NextFunction): Promise<void> {
+export async function idempotency(req: Request, res: Response, next: NextFunction): Promise<void> {
   if (req.method !== 'POST') {
     next();
     return;
@@ -15,8 +12,11 @@ export async function idempotency(req: Request, _res: Response, next: NextFuncti
 
   const key = req.headers['idempotency-key'] as string;
   if (!key) {
-    next();
-    return;
+    throw new AppError(
+      400,
+      'MISSING_IDEMPOTENCY_KEY',
+      'Idempotency-Key header is required for POST requests that move money',
+    );
   }
 
   const cacheKey = `idempotency:${key}`;
@@ -31,7 +31,8 @@ export async function idempotency(req: Request, _res: Response, next: NextFuncti
       throw new IdempotencyError();
     }
 
-    (req as unknown as { idempotencyCached: unknown }).idempotencyCached = existingData.response;
+    res.status(200).json(existingData.response);
+    return;
   }
 
   (req as unknown as { idempotencyKey: string }).idempotencyKey = key;
@@ -43,7 +44,6 @@ export async function cacheIdempotencyResponse(req: Request, responseData: unkno
   if (!key) return;
 
   const cacheKey = `idempotency:${key}`;
-  const redis = new Redis(getConfig().REDIS_URL);
 
   await redis.set(
     cacheKey,
