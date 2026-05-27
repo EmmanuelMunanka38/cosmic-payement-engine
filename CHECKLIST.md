@@ -1,6 +1,6 @@
 # Cosmic Payment — Build Checklist
 
-## Phase 1: Foundation 
+## Phase 1: Foundation
 
 - [x] Project directory structure
 - [x] AGENTS.md — AI rules
@@ -13,7 +13,7 @@
 - [x] Dockerfile — multi-stage production build
 - [x] Prisma schema — all models & enums
 
-## Phase 2: Core Infrastructure 
+## Phase 2: Core Infrastructure
 
 - [x] `src/config/index.ts` — validated config singleton
 - [x] `src/config/logger.ts` — Pino logger
@@ -25,7 +25,7 @@
 - [x] `src/utils/phone.ts` — phone parsing + network detection
 - [x] `src/utils/pagination.ts` — cursor-based pagination
 
-## Phase 3: Middleware 
+## Phase 3: Middleware
 
 - [x] `src/middleware/auth.ts` — JWT verification
 - [x] `src/middleware/apiKeyAuth.ts` — API key auth for B2B
@@ -36,7 +36,7 @@
 - [x] `src/middleware/requestLogger.ts` — Pino request logging
 - [x] `src/middleware/requireKyc.ts` — KYC gate
 
-## Phase 4: Auth Module 
+## Phase 4: Auth Module
 
 - [x] `src/modules/auth/auth.validation.ts`
 - [x] `src/modules/auth/auth.repository.ts`
@@ -45,7 +45,7 @@
 - [x] `src/modules/auth/auth.routes.ts`
 - [x] Auth tests (11 tests, all passing)
 
-## Phase 5: User Module 
+## Phase 5: User Module
 
 - [x] `src/modules/users/users.validation.ts`
 - [x] `src/modules/users/users.repository.ts`
@@ -54,7 +54,7 @@
 - [x] `src/modules/users/users.routes.ts`
 - [x] User tests (4 tests, all passing)
 
-## Phase 6: Wallet Module 
+## Phase 6: Wallet Module
 
 - [x] `src/modules/wallets/wallets.validation.ts`
 - [x] `src/modules/wallets/wallets.repository.ts`
@@ -63,7 +63,7 @@
 - [x] `src/modules/wallets/wallets.routes.ts`
 - [x] Wallet tests (7 tests, all passing)
 
-## Phase 7: Exchange Rates Module 
+## Phase 7: Exchange Rates Module
 
 - [x] `src/modules/exchangeRates/rates.validation.ts`
 - [x] `src/modules/exchangeRates/rates.repository.ts`
@@ -73,7 +73,7 @@
 - [x] `src/modules/exchangeRates/rates.cron.ts`
 - [x] Rates tests (8 tests, all passing)
 
-## Phase 8: Transaction Module 
+## Phase 8: Transaction Module
 
 - [x] `src/modules/transactions/transaction.state.ts`
 - [x] `src/modules/transactions/transactions.validation.ts`
@@ -83,7 +83,7 @@
 - [x] `src/modules/transactions/transactions.routes.ts`
 - [x] Transaction tests (13 tests, all passing)
 
-## Phase 9: Payment Provider Adapters 
+## Phase 9: Payment Provider Adapters
 
 - [x] `src/modules/paymentProviders/interfaces/payment-provider.interface.ts`
 - [x] `src/modules/paymentProviders/interfaces/card-provider.interface.ts`
@@ -97,7 +97,7 @@
 - [x] **Orange Money** adapter
 - [x] **Wave** adapter
 
-## Phase 10: Payout Module 
+## Phase 10: Payout Module
 
 - [x] `src/modules/payouts/payouts.validation.ts`
 - [x] `src/modules/payouts/payouts.repository.ts`
@@ -106,7 +106,7 @@
 - [x] `src/modules/payouts/payouts.routes.ts`
 - [x] Payout tests (5 tests, all passing)
 
-## Phase 11: Webhooks Module 
+## Phase 11: Webhooks Module
 
 - [x] `src/modules/webhooks/webhooks.controller.ts`
 - [x] `src/modules/webhooks/webhooks.service.ts`
@@ -114,7 +114,7 @@
 - [x] `src/modules/webhooks/webhooks.routes.ts`
 - [x] Webhooks tests (3 tests, all passing)
 
-## Phase 12: KYC Module 
+## Phase 12: KYC Module
 
 - [x] `src/modules/kyc/kyc.validation.ts`
 - [x] `src/modules/kyc/kyc.service.ts`
@@ -123,7 +123,7 @@
 - [x] `src/modules/kyc/kyc.routes.ts`
 - [x] KYC tests (6 tests, all passing)
 
-## Phase 13: Admin Module 
+## Phase 13: Admin Module
 
 - [x] `src/modules/admin/admin.service.ts`
 - [x] `src/modules/admin/admin.repository.ts`
@@ -132,14 +132,14 @@
 - [x] `src/modules/admin/admin.middleware.ts`
 - [x] Admin tests (6 tests, all passing)
 
-## Phase 14: Ledger Module 
+## Phase 14: Ledger Module
 
 - [x] `src/modules/ledger/ledger.types.ts`
 - [x] `src/modules/ledger/ledger.validation.ts`
 - [x] `src/modules/ledger/ledger.service.ts`
 - [ ] Ledger tests (not yet written)
 
-## Phase 15: API Keys Module 
+## Phase 15: API Keys Module
 
 - [x] `src/modules/apiKeys/apiKeys.validation.ts`
 - [x] `src/modules/apiKeys/apiKeys.service.ts`
@@ -148,7 +148,7 @@
 - [x] `src/modules/apiKeys/apiKeys.routes.ts`
 - [x] API Keys tests (4 tests, all passing)
 
-## Phase 16: Jobs & Queues 
+## Phase 16: Jobs & Queues
 
 - [x] `src/jobs/queues.ts` — BullMQ queue definitions
 - [x] `src/jobs/workers/webhook-delivery.worker.ts`
@@ -156,12 +156,12 @@
 - [x] `src/jobs/workers/transaction-timeout.worker.ts`
 - [x] `src/jobs/workers/rate-refresh.worker.ts`
 
-## Phase 17: App Entry & Server 
+## Phase 17: App Entry & Server
 
 - [x] `src/app.ts` — Express app with all middleware + routes
 - [x] `src/index.ts` — Server entry point
 
-## Phase 18: Tests 
+## Phase 18: Tests
 
 - [x] Vitest setup (`vitest.setup.ts`)
 - [x] Auth module tests (11 tests)
@@ -177,7 +177,35 @@
 - [x] Provider adapter tests (35 tests)
 - [ ] E2E flow tests (not yet written)
 
-## Phase 19: Polish 
+## Phase 19: Sandbox Testing Environment
+
+- [x] `src/modules/sandbox/sandbox.validation.ts` — Zod schemas
+- [x] `src/modules/sandbox/sandbox.service.ts` — sandbox business logic (separate sandbox DB)
+- [x] `src/modules/sandbox/sandbox.controller.ts` — 7 route handlers
+- [x] `src/modules/sandbox/sandbox.routes.ts` — routes at `/api/v1/sandbox/*`
+- [x] `src/lib/prisma.ts` — dual PrismaClient (production + sandbox with `SANDBOX_DATABASE_URL`)
+- [x] Repo DI pattern — repos accept optional prisma client for sandbox isolation
+- [x] `POSTMAN.md` — full Postman testing guide with sandbox flow
+
+**Sandbox Endpoints:**
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/v1/sandbox/api-keys` | Create sand\_ API key + fund wallets |
+| GET | `/api/v1/sandbox/api-keys` | List sandbox keys |
+| GET | `/api/v1/sandbox/transactions` | List sandbox txns |
+| POST | `/api/v1/sandbox/simulate/stripe` | Simulate Stripe webhook |
+| POST | `/api/v1/sandbox/simulate/mpesa` | Simulate M-Pesa callback |
+| POST | `/api/v1/sandbox/simulate/payout` | Resolve pending payout |
+| POST | `/api/v1/sandbox/reset` | Wipe all sandbox data |
+
+**Architecture:**
+
+- Separate `cosmic_payment_sandbox` database
+- `getSandboxPrisma()` returns a dedicated PrismaClient for sandbox ops
+- Production repos accept optional `_prisma` param (injected by sandbox service)
+- Sandbox payouts auto-succeed without calling real money providers
+
+## Phase 20: Polish
 
 - [x] Swagger/OpenAPI docs (`src/config/swagger.ts`)
 - [x] Prisma seed script (`prisma/seed.ts`)

@@ -6,6 +6,7 @@ Cross-border payment gateway for Africa (like Nala + Stripe + Mobile Money).
 Monolithic TypeScript backend with Express, Prisma, PostgreSQL, Redis, BullMQ.
 
 ## Code Conventions
+
 - **No comments in code** unless explaining a non-obvious business rule
 - **TypeScript strict mode** — no `any`, no `as` casts unless unavoidable
 - **Module pattern**: `controller → service → repository` per module
@@ -22,6 +23,8 @@ Monolithic TypeScript backend with Express, Prisma, PostgreSQL, Redis, BullMQ.
 4. Every `POST` endpoint that moves money MUST accept `Idempotency-Key` header
 5. Wallet balance changes use optimistic locking (version field)
 6. BullMQ queues for: async webhook delivery, payout settlement, notifications, rate refresh
+7. **Sandbox isolation**: Two separate PostgreSQL databases. `SANDBOX_DATABASE_URL` in `.env` for sandbox. Use `getSandboxPrisma()` (from `lib/prisma.ts`) for all sandbox DB operations. Production repos accept optional `_prisma` param at the end for DI — sandbox service injects the sandbox client.
+8. **Sandbox service** (`src/modules/sandbox/`) NEVER imports production `prisma`. All DB calls go through `sb = getSandboxPrisma()`. Sandbox payouts auto-succeed without calling real providers.
 
 ## Module Structure
 
@@ -56,6 +59,6 @@ Always use `utils/response.ts` helpers:
 - No commits without explicit user request
 - Descriptive commit messages focusing on "why"
 
+## major rule in fintech
 
-## major rule  in fintech 
-- a single error on the logic some does not get a meal tonight 
+- a single error on the logic some does not get a meal tonight
