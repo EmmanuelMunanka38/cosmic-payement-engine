@@ -1,0 +1,1066 @@
+====================================================================
+  COSMIC PAYMENT GATEWAY — API TESTING GUIDE (Postman)
+====================================================================
+
+Base URL: http://localhost:3000
+Swagger UI: http://localhost:3000/api-docs
+
+====================================================================
+  TABLE OF CONTENTS
+====================================================================
+  1. Health Check
+  2. Auth — Register
+  3. Auth — Login
+  4. Auth — Refresh Token
+  5. Auth — Logout
+  6. Users — Get Profile
+  7. Users — Update Profile
+  8. Wallets — Create Wallet
+  9. Wallets — List Wallets
+  10. Wallets — Get Wallet by ID
+  11. Exchange Rates — List Rates
+  12. Exchange Rates — Pair Rate
+  13. Exchange Rates — Get Quote
+  14. Transactions — Send (Internal)
+  15. Transactions — Cross-Border Send
+  16. Transactions — Pay In (Top-up)
+  17. Transactions — Pay Out
+  18. Transactions — List
+  19. Transactions — Get by ID
+  20. Transactions — Get by Reference
+  21. KYC — Submit
+  22. KYC — Get Status
+  23. Payouts — Create
+  24. Payouts — List
+  25. Network Detection — List Providers
+  26. Network Detection — Detect by Phone
+  27. Admin — List Users
+  28. Admin — List Transactions
+  29. Admin — Stats
+  30. Admin — Approve Transaction
+  31. Admin — Reject Transaction
+  32. Admin — Update KYC Status
+  33. API Keys — Create
+  34. API Keys — List
+  35. API Keys — Revoke
+
+
+====================================================================
+  SETUP
+====================================================================
+
+1. Start the server:
+   npm run dev
+
+2. Server should log: "Cosmic Payment started" on port 3000.
+
+--------------------------------------------------------------------
+  POSTMAN SETUP
+--------------------------------------------------------------------
+
+Create these variables in Postman (Collection → Variables):
+
+  Variable          | Initial Value
+  ------------------|---------------------
+  base_url          | http://localhost:3000
+  token             | (leave blank — filled by Login test)
+  refresh_token     | (leave blank — filled by Login test)
+  api_key           | (leave blank — filled by API Key creation)
+  wallet_id         | (filled after wallet creation)
+  txn_id            | (filled after transaction)
+  user_id           | (filled after registration)
+
+For the Authorization tab in Postman, select "Bearer Token"
+and set the token value to {{token}} for protected endpoints.
+
+For Idempotency-Key: generate a UUID per request in Postman
+Pre-request Script:
+  pm.variables.set("idem_key", pm.variables.replaceIn("{{$randomUUID}}"))
+Then use {{idem_key}} in the header.
+
+====================================================================
+  1. HEALTH CHECK
+====================================================================
+
+  GET  {{base_url}}/health
+
+  No auth required.
+
+  Response 200:
+  {
+    "status": "ok",
+    "timestamp": "2026-05-27T00:00:00.000Z",
+    "uptime": 123.45
+  }
+
+
+====================================================================
+  2. AUTH — REGISTER
+====================================================================
+
+  POST  {{base_url}}/api/v1/auth/register
+  Content-Type: application/json
+
+  Body:
+  {
+    "email": "testuser@example.com",
+    "phone": "+254712345678",
+    "password": "password123",
+    "firstName": "Test",
+    "lastName": "User",
+    "country": "KE"
+  }
+
+  Response 201:
+  {
+    "status": "success",
+    "data": {
+      "user": {
+        "id": "user-uuid-here",
+        "email": "testuser@example.com",
+        "phone": "+254712345678",
+        "firstName": "Test",
+        "lastName": "User",
+        "country": "KE",
+        "role": "USER",
+        "kycStatus": "UNVERIFIED",
+        "isActive": true,
+        "createdAt": "2026-05-27T00:00:00.000Z"
+      },
+      "accessToken": "eyJhbG...",
+      "refreshToken": "eyJhbG..."
+    }
+  }
+
+  ⚠️ Save the accessToken and refreshToken for subsequent requests.
+  In Postman, set in Tests tab:
+    var json = pm.response.json();
+    pm.collectionVariables.set("token", json.data.accessToken);
+    pm.collectionVariables.set("refresh_token", json.data.refreshToken);
+    pm.collectionVariables.set("user_id", json.data.user.id);
+
+
+====================================================================
+  3. AUTH — LOGIN
+====================================================================
+
+  POST  {{base_url}}/api/v1/auth/login
+  Content-Type: application/json
+
+  Body:
+  {
+    "email": "testuser@example.com",
+    "password": "password123"
+  }
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "user": { ... },
+      "accessToken": "eyJhbG...",
+      "refreshToken": "eyJhbG..."
+    }
+  }
+
+  ⚠️ Update Postman variables (token, refresh_token) from response.
+
+
+====================================================================
+  4. AUTH — REFRESH TOKEN
+====================================================================
+
+  POST  {{base_url}}/api/v1/auth/refresh
+  Content-Type: application/json
+
+  Body:
+  {
+    "refreshToken": "{{refresh_token}}"
+  }
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "accessToken": "eyJhbG...",
+      "refreshToken": "eyJhbG..."
+    }
+  }
+
+
+====================================================================
+  5. AUTH — LOGOUT
+====================================================================
+
+  POST  {{base_url}}/api/v1/auth/logout
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": { "message": "Logged out successfully" }
+  }
+
+
+====================================================================
+  6. USERS — GET PROFILE
+====================================================================
+
+  GET  {{base_url}}/api/v1/users/me
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "id": "user-uuid",
+      "email": "testuser@example.com",
+      "phone": "+254712345678",
+      "firstName": "Test",
+      "lastName": "User",
+      "country": "KE",
+      "role": "USER",
+      "kycStatus": "UNVERIFIED",
+      "isActive": true,
+      "twoFactorEnabled": false,
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
+  }
+
+
+====================================================================
+  7. USERS — UPDATE PROFILE
+====================================================================
+
+  PATCH  {{base_url}}/api/v1/users/me
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+
+  Body (all fields optional):
+  {
+    "firstName": "Updated",
+    "phone": "+254712345679"
+  }
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "id": "user-uuid",
+      "email": "testuser@example.com",
+      "phone": "+254712345679",
+      "firstName": "Updated",
+      "lastName": "User",
+      "country": "KE",
+      "role": "USER",
+      "kycStatus": "UNVERIFIED",
+      "updatedAt": "..."
+    }
+  }
+
+
+====================================================================
+  8. WALLETS — CREATE WALLET
+====================================================================
+
+  POST  {{base_url}}/api/v1/wallets
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+
+  Currency codes: USD, EUR, GBP, KES, NGN, UGX, GHS, TZS, XAF, XOF,
+                  RWF, ZMW, MAD, ZAR
+
+  Body:
+  {
+    "currency": "KES"
+  }
+
+  Response 201:
+  {
+    "status": "success",
+    "data": {
+      "id": "wallet-uuid",
+      "userId": "user-uuid",
+      "currency": "KES",
+      "balance": 0,
+      "ledgerBalance": 0,
+      "availableBalance": 0,
+      "version": 1,
+      "isActive": true,
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
+  }
+
+  ⚠️ Save wallet ID: pm.collectionVariables.set("wallet_id", json.data.id);
+
+
+====================================================================
+  9. WALLETS — LIST WALLETS
+====================================================================
+
+  GET  {{base_url}}/api/v1/wallets
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": [
+      { "id": "wallet-uuid", "currency": "KES", "balance": 0, ... }
+    ]
+  }
+
+
+====================================================================
+  10. WALLETS — GET WALLET BY ID
+====================================================================
+
+  GET  {{base_url}}/api/v1/wallets/{{wallet_id}}
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": { ... wallet object ... }
+  }
+
+
+====================================================================
+  11. EXCHANGE RATES — LIST RATES
+====================================================================
+
+  GET  {{base_url}}/api/v1/rates
+  No auth required.
+
+  Response 200:
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": "rate-uuid",
+        "fromCurrency": "USD",
+        "toCurrency": "KES",
+        "rate": 150.25,
+        "bid": 149.75,
+        "ask": 150.75,
+        "source": "open-exchange-rates",
+        "validUntil": "..."
+      }
+    ]
+  }
+
+
+====================================================================
+  12. EXCHANGE RATES — PAIR RATE
+====================================================================
+
+  GET  {{base_url}}/api/v1/rates/USD/KES
+  No auth required.
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "fromCurrency": "USD",
+      "toCurrency": "KES",
+      "rate": 150.25,
+      "bid": 149.75,
+      "ask": 150.75
+    }
+  }
+
+
+====================================================================
+  13. EXCHANGE RATES — GET QUOTE
+====================================================================
+
+  POST  {{base_url}}/api/v1/rates/quote
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+
+  Body:
+  {
+    "from": "USD",
+    "to": "KES",
+    "amount": 100
+  }
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "quoteId": "Q-...",
+      "rate": 150.25,
+      "fee": 1.00,
+      "destinationAmount": 14876.25,
+      "validForSeconds": 30
+    }
+  }
+
+
+====================================================================
+  14. TRANSACTIONS — SEND (Internal)
+====================================================================
+
+  ⚠️ Requires: Idempotency-Key header
+  ⚠️ Requires: Both sender and recipient must have wallets in
+               the same currency. Recipient must exist.
+
+  POST  {{base_url}}/api/v1/transactions/send
+  Authorization: Bearer {{token}}
+  Idempotency-Key: {{idem_key}}
+  Content-Type: application/json
+
+  Body:
+  {
+    "recipientEmail": "anotheruser@example.com",
+    "amount": 50,
+    "currency": "KES",
+    "description": "Lunch money"
+  }
+  OR (use either recipientEmail or recipientPhone):
+  {
+    "recipientPhone": "+254712345679",
+    "amount": 50,
+    "currency": "KES"
+  }
+
+  Response 201:
+  {
+    "status": "success",
+    "data": {
+      "id": "txn-uuid",
+      "reference": "TXN-...",
+      "type": "SEND",
+      "status": "SUCCESS",
+      "sourceCurrency": "KES",
+      "destinationCurrency": "KES",
+      "sourceAmount": 50,
+      "destinationAmount": 50,
+      "description": "Lunch money",
+      "createdAt": "...",
+      "statusHistory": [ ... ]
+    }
+  }
+
+  ⚠️ Save transaction ID:
+    pm.collectionVariables.set("txn_id", json.data.id);
+
+
+====================================================================
+  15. TRANSACTIONS — CROSS-BORDER SEND
+====================================================================
+
+  ⚠️ Requires: Idempotency-Key header
+
+  POST  {{base_url}}/api/v1/transactions/cross-border
+  Authorization: Bearer {{token}}
+  Idempotency-Key: {{idem_key}}
+  Content-Type: application/json
+
+  Body:
+  {
+    "sourceCurrency": "USD",
+    "destinationCurrency": "KES",
+    "sourceAmount": 100,
+    "recipientPhone": "+254712345679",
+    "recipientName": "John Doe",
+    "recipientProvider": "MPESA",
+    "description": "Cross-border payment"
+  }
+
+  Response 201:
+  {
+    "status": "success",
+    "data": { ... transaction with PROCESSING status ... }
+  }
+
+
+====================================================================
+  16. TRANSACTIONS — PAY IN (Card Top-Up)
+====================================================================
+
+  ⚠️ Requires: Idempotency-Key header
+
+  POST  {{base_url}}/api/v1/transactions/pay-in
+  Authorization: Bearer {{token}}
+  Idempotency-Key: {{idem_key}}
+  Content-Type: application/json
+
+  Body:
+  {
+    "currency": "KES",
+    "amount": 1000,
+    "returnUrl": "https://myapp.com/confirmation"
+  }
+
+  Response 201:
+  {
+    "status": "success",
+    "data": {
+      "id": "txn-uuid",
+      "reference": "TXN-...",
+      "type": "RECEIVE",
+      "status": "PENDING",
+      "sourceCurrency": "KES",
+      "destinationCurrency": "KES",
+      "sourceAmount": 1000,
+      "destinationAmount": 1000,
+      "provider": "STRIPE",
+      "createdAt": "..."
+    }
+  }
+
+
+====================================================================
+  17. TRANSACTIONS — PAY OUT
+====================================================================
+
+  ⚠️ Requires: Idempotency-Key header
+  ⚠️ Requires: Sufficient wallet balance
+
+  POST  {{base_url}}/api/v1/transactions/pay-out
+  Authorization: Bearer {{token}}
+  Idempotency-Key: {{idem_key}}
+  Content-Type: application/json
+
+  Body:
+  {
+    "currency": "KES",
+    "amount": 100,
+    "recipientPhone": "+254700000001",
+    "recipientProvider": "MPESA",
+    "description": "Withdrawal"
+  }
+
+  Response 201:
+  {
+    "status": "success",
+    "data": { ... transaction with PROCESSING status ... }
+  }
+
+
+====================================================================
+  18. TRANSACTIONS — LIST
+====================================================================
+
+  GET  {{base_url}}/api/v1/transactions
+  Authorization: Bearer {{token}}
+
+  Optional query params: ?cursor=txn-uuid&limit=20
+
+  Response 200:
+  {
+    "status": "success",
+    "data": [ ... array of transactions ... ],
+    "meta": {
+      "hasMore": true,
+      "total": 42
+    }
+  }
+
+
+====================================================================
+  19. TRANSACTIONS — GET BY ID
+====================================================================
+
+  GET  {{base_url}}/api/v1/transactions/{{txn_id}}
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": { ... full transaction with statusHistory ... }
+  }
+
+
+====================================================================
+  20. TRANSACTIONS — GET BY REFERENCE
+====================================================================
+
+  GET  {{base_url}}/api/v1/transactions/reference/TXN-xxxxxxxx
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": { ... transaction ... }
+  }
+
+
+====================================================================
+  21. KYC — SUBMIT
+====================================================================
+
+  POST  {{base_url}}/api/v1/kyc/submit
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+
+  Document types: PASSPORT, NATIONAL_ID, DRIVERS_LICENSE, UTILITY_BILL
+
+  Body:
+  {
+    "documentType": "PASSPORT",
+    "documentUrl": "https://storage.example.com/passport.pdf"
+  }
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "id": "doc-uuid",
+      "userId": "user-uuid",
+      "documentType": "PASSPORT",
+      "status": "PENDING",
+      "createdAt": "..."
+    }
+  }
+
+
+====================================================================
+  22. KYC — GET STATUS
+====================================================================
+
+  GET  {{base_url}}/api/v1/kyc/status
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "kycStatus": "PENDING",
+      "documents": [
+        {
+          "id": "doc-uuid",
+          "documentType": "PASSPORT",
+          "status": "PENDING",
+          "createdAt": "..."
+        }
+      ]
+    }
+  }
+
+
+====================================================================
+  23. PAYOUTS — CREATE
+====================================================================
+
+  ⚠️ Requires: Idempotency-Key header
+  ⚠️ Requires: Sufficient wallet balance
+
+  POST  {{base_url}}/api/v1/payouts
+  Authorization: Bearer {{token}}
+  Idempotency-Key: {{idem_key}}
+  Content-Type: application/json
+
+  Provider options: MPESA, MTN_MOMO, AIRTEL_MONEY, ORANGE_MONEY, WAVE
+
+  Body:
+  {
+    "amount": 200,
+    "currency": "KES",
+    "recipientPhone": "+254700000001",
+    "recipientName": "John Doe",
+    "recipientProvider": "MPESA",
+    "description": "Payout to mobile money"
+  }
+
+  Response 201:
+  {
+    "status": "success",
+    "data": {
+      "id": "txn-uuid",
+      "reference": "PO-...",
+      "userId": "user-uuid",
+      "type": "PAYOUT",
+      "status": "PROCESSING" or "SUCCESS",
+      "sourceCurrency": "KES",
+      "destinationCurrency": "KES",
+      "sourceAmount": 200,
+      "destinationAmount": 200,
+      "provider": "MPESA",
+      "recipientPhone": "+254700000001",
+      "recipientName": "John Doe",
+      "createdAt": "..."
+    }
+  }
+
+
+====================================================================
+  24. PAYOUTS — LIST
+====================================================================
+
+  GET  {{base_url}}/api/v1/payouts
+  Authorization: Bearer {{token}}
+
+  Optional query params: ?cursor=txn-uuid&limit=20
+
+  Response 200:
+  {
+    "status": "success",
+    "data": [ ... array of payout transactions ... ]
+  }
+
+
+====================================================================
+  25. NETWORK DETECTION — LIST PROVIDERS
+====================================================================
+
+  GET  {{base_url}}/api/v1/providers/networks
+  No auth required.
+
+  Response 200:
+  {
+    "status": "success",
+    "data": [
+      {
+        "provider": "MPESA",
+        "countries": ["KE","TZ","MZ","CD","LS","GH","EG"],
+        "currencies": ["KES","TZS"]
+      },
+      {
+        "provider": "MTN_MOMO",
+        "countries": ["UG","GH","RW","ZM","CM","CI","BJ","GN"],
+        "currencies": ["UGX","GHS","RWF","ZMW","XAF","XOF"]
+      },
+      {
+        "provider": "AIRTEL_MONEY",
+        "countries": ["UG","KE","TZ","RW","MW","ZM","MG","CD"],
+        "currencies": ["UGX","KES","TZS","MWK","ZMW"]
+      },
+      {
+        "provider": "ORANGE_MONEY",
+        "countries": ["CI","SN","ML","CM","GN","MG","MR"],
+        "currencies": ["XOF","XAF"]
+      },
+      {
+        "provider": "WAVE",
+        "countries": ["SN","CI","ML","BF","UG"],
+        "currencies": ["XOF","UGX"]
+      }
+    ]
+  }
+
+
+====================================================================
+  26. NETWORK DETECTION — DETECT BY PHONE
+====================================================================
+
+  GET  {{base_url}}/api/v1/providers/network/+254712345678
+  No auth required.
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "phone": "+254712345678",
+      "country": "KE",
+      "network": "SAFARICOM",
+      "provider": "MPESA"
+    }
+  }
+
+
+====================================================================
+  27. ADMIN — LIST USERS
+====================================================================
+
+  ⚠️ Requires: ADMIN or SUPER_ADMIN role
+
+  GET  {{base_url}}/api/v1/admin/users
+  Authorization: Bearer {{token}}
+
+  Optional query params: ?cursor=user-uuid&limit=20
+
+  Response 200:
+  {
+    "status": "success",
+    "data": [ ... array of users ... ],
+    "meta": { "hasMore": false, "total": 5 }
+  }
+
+
+====================================================================
+  28. ADMIN — LIST TRANSACTIONS
+====================================================================
+
+  ⚠️ Requires: ADMIN or SUPER_ADMIN role
+
+  GET  {{base_url}}/api/v1/admin/transactions
+  Authorization: Bearer {{token}}
+
+  Optional query params: ?status=PENDING&cursor=txn-uuid&limit=20
+
+  Status filter: PENDING, PROCESSING, SUCCESS, FAILED, CANCELLED
+
+  Response 200:
+  {
+    "status": "success",
+    "data": [ ... array of transactions with user ... ],
+    "meta": { "hasMore": true, "total": 50 }
+  }
+
+
+====================================================================
+  29. ADMIN — STATS
+====================================================================
+
+  ⚠️ Requires: ADMIN or SUPER_ADMIN role
+
+  GET  {{base_url}}/api/v1/admin/stats
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "total": 100,
+      "pending": 10,
+      "success": 80,
+      "failed": 5,
+      "totalVolume": 50000.00
+    }
+  }
+
+
+====================================================================
+  30. ADMIN — APPROVE TRANSACTION
+====================================================================
+
+  ⚠️ Requires: ADMIN or SUPER_ADMIN role
+  ⚠️ Requires: Idempotency-Key header
+
+  POST  {{base_url}}/api/v1/admin/transactions/{{txn_id}}/approve
+  Authorization: Bearer {{token}}
+  Idempotency-Key: {{idem_key}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "id": "txn-uuid",
+      "status": "SUCCESS",
+      "completedAt": "..."
+    }
+  }
+
+
+====================================================================
+  31. ADMIN — REJECT TRANSACTION
+====================================================================
+
+  ⚠️ Requires: ADMIN or SUPER_ADMIN role
+  ⚠️ Requires: Idempotency-Key header
+
+  POST  {{base_url}}/api/v1/admin/transactions/{{txn_id}}/reject
+  Authorization: Bearer {{token}}
+  Idempotency-Key: {{idem_key}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "id": "txn-uuid",
+      "status": "FAILED"
+    }
+  }
+
+
+====================================================================
+  32. ADMIN — UPDATE KYC STATUS
+====================================================================
+
+  ⚠️ Requires: ADMIN or SUPER_ADMIN role
+
+  PATCH  {{base_url}}/api/v1/admin/users/{{user_id}}/kyc-status
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+
+  Status options: VERIFIED, REJECTED
+
+  Body:
+  {
+    "status": "VERIFIED"
+  }
+  OR (with rejection reason):
+  {
+    "status": "REJECTED",
+    "rejectedReason": "Document is blurry, please resubmit"
+  }
+
+  Response 200:
+  {
+    "status": "success",
+    "data": { "message": "KYC status updated" }
+  }
+
+
+====================================================================
+  33. API KEYS — CREATE
+====================================================================
+
+  ⚠️ The full API key is returned ONCE only. Save it immediately.
+
+  POST  {{base_url}}/api/v1/api-keys
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+
+  Body:
+  {
+    "name": "Postman Testing Key",
+    "scopes": ["transactions:read", "transactions:write"],
+    "expiresAt": "2027-01-01T00:00:00.000Z"
+  }
+
+  Response 201:
+  {
+    "status": "success",
+    "data": {
+      "apiKey": "afp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "name": "Postman Testing Key",
+      "scopes": ["transactions:read", "transactions:write"],
+      "prefix": "afp_xxxx",
+      "lastCharacters": "abcd",
+      "warning": "Save this API key — it will not be shown again"
+    }
+  }
+
+  ⚠️ SAVE the apiKey value! It will not be shown again.
+  In Postman, set: pm.collectionVariables.set("api_key", json.data.apiKey);
+
+
+====================================================================
+  34. API KEYS — LIST
+====================================================================
+
+  GET  {{base_url}}/api/v1/api-keys
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": "key-uuid",
+        "name": "Postman Testing Key",
+        "keyPrefix": "afp_xxxx",
+        "lastCharacters": "abcd",
+        "scopes": ["transactions:read", "transactions:write"],
+        "isActive": true,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "lastUsedAt": null,
+        "createdAt": "..."
+      }
+    ]
+  }
+
+
+====================================================================
+  35. API KEYS — REVOKE
+====================================================================
+
+  DELETE  {{base_url}}/api/v1/api-keys/{{key_id}}
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": { "message": "API key revoked" }
+  }
+
+
+====================================================================
+  USING API KEY AUTH (Alternative to Bearer Token)
+====================================================================
+
+  Some endpoints support X-API-Key authentication instead of
+  Bearer JWT. To use:
+
+  GET  {{base_url}}/api/v1/users/me
+  X-API-Key: {{api_key}}
+
+  (Replace Authorization: Bearer header with X-API-Key header)
+
+
+====================================================================
+  ERROR RESPONSES (Common)
+====================================================================
+
+  All errors follow this structure:
+  {
+    "status": "error",
+    "error": {
+      "code": "ERROR_CODE",
+      "message": "Human-readable message",
+      "details": {}
+    }
+  }
+
+  Common error codes:
+  ──────────────────────────────────────────────────────────────
+  400  MISSING_IDEMPOTENCY_KEY    Idempotency-Key header required
+  400  VALIDATION_ERROR           Request body validation failed
+  401  AUTH_TOKEN_MISSING         No Authorization header
+  401  AUTH_TOKEN_EXPIRED         Token expired
+  401  AUTH_TOKEN_INVALID         Bad token
+  401  API_KEY_MISSING            No X-API-Key header
+  401  API_KEY_INVALID            Bad API key
+  401  API_KEY_EXPIRED            API key expired
+  403  FORBIDDEN                  Not enough permissions
+  404  NOT_FOUND                  Resource not found
+  409  CONFLICT                   Idempotency key conflict
+  429  RATE_LIMIT_EXCEEDED        Too many requests
+  500  INTERNAL_ERROR             Unexpected server error
+
+
+====================================================================
+  SEED DATA (if you ran npm run db:seed)
+====================================================================
+
+  Admin account:
+    Email:    admin@cosmic-payment.dev
+    Password: admin123
+
+  Test user account:
+    Email:    user@cosmic-payment.dev
+    Password: user123
+
+  (Test user has wallets with 10,000 balance in USD, KES, UGX, GHS, NGN)
+
+
+====================================================================
+  REQUIRED HEADERS SUMMARY
+====================================================================
+
+  Endpoint Type              | Required Headers
+  ───────────────────────────|──────────────────────────────────────
+  Public (health, rates)     | (none)
+  Auth (register, login)     | (none)
+  Authenticated (GET/PATCH)  | Authorization: Bearer {{token}}
+  Money-moving POST          | Authorization + Idempotency-Key
+  Admin routes               | Authorization (with ADMIN role) + Idempotency-Key for POST
+  API Key auth               | X-API-Key: {{api_key}}
+
+
+====================================================================
+  RECOMMENDED TESTING FLOW (End-to-End)
+====================================================================
+
+  1. Health Check            → GET  /health
+  2. Register                → POST /api/v1/auth/register
+  3. Login                   → POST /api/v1/auth/login
+  4. Get Profile             → GET  /api/v1/users/me
+  5. Create Wallet (KES)     → POST /api/v1/wallets
+  6. Create Wallet (USD)     → POST /api/v1/wallets
+  7. List Wallets            → GET  /api/v1/wallets
+  8. Get Quote               → POST /api/v1/rates/quote
+  9. Submit KYC              → POST /api/v1/kyc/submit
+  10. Admin Approve KYC       → PATCH /api/v1/admin/users/:id/kyc-status
+  11. Internal Send           → POST /api/v1/transactions/send
+  12. List Transactions       → GET  /api/v1/transactions
+  13. Create Payout           → POST /api/v1/payouts
+  14. Create API Key          → POST /api/v1/api-keys
+  15. Test API Key Auth       → GET  /api/v1/users/me (with X-API-Key)
+
+====================================================================
