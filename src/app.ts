@@ -6,6 +6,7 @@ import { requestLogger } from './middleware/requestLogger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
 import { getConfig } from './config/index.js';
+import { setupSwagger } from './config/swagger.js';
 
 import authRoutes from './modules/auth/auth.routes.js';
 import userRoutes from './modules/users/users.routes.js';
@@ -29,6 +30,8 @@ export function createApp() {
   app.use(cors({ origin: config.CORS_ORIGINS.split(','), credentials: true }));
   app.use(requestLogger);
   app.use(rateLimiter(60000, 100));
+
+  setupSwagger(app);
 
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString(), uptime: process.uptime() });
