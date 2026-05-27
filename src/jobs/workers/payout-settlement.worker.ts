@@ -1,12 +1,8 @@
 import { Worker } from 'bullmq';
-import Redis from 'ioredis';
-import { PrismaClient } from '@prisma/client';
-import { getConfig } from '../../config/index.js';
+import { redis } from '../../lib/redis.js';
+import { prisma } from '../../lib/prisma.js';
 import { logger } from '../../config/logger.js';
 import { providerRegistry } from '../../modules/paymentProviders/provider-registry.js';
-
-const connection = new Redis(getConfig().REDIS_URL, { maxRetriesPerRequest: null });
-const prisma = new PrismaClient();
 
 export function createPayoutSettlementWorker() {
   const worker = new Worker(
@@ -32,7 +28,7 @@ export function createPayoutSettlementWorker() {
 
       logger.info({ transactionId, status: txnStatus }, 'Payout settled');
     },
-    { connection: connection as any, concurrency: 5 },
+    { connection: redis as any, concurrency: 5 },
   );
 
   worker.on('failed', (job, err) => {

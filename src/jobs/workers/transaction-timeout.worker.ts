@@ -1,11 +1,7 @@
 import { Worker } from 'bullmq';
-import Redis from 'ioredis';
-import { PrismaClient } from '@prisma/client';
-import { getConfig } from '../../config/index.js';
+import { redis } from '../../lib/redis.js';
+import { prisma } from '../../lib/prisma.js';
 import { logger } from '../../config/logger.js';
-
-const connection = new Redis(getConfig().REDIS_URL, { maxRetriesPerRequest: null });
-const prisma = new PrismaClient();
 
 export function createTransactionTimeoutWorker() {
   const worker = new Worker(
@@ -28,7 +24,7 @@ export function createTransactionTimeoutWorker() {
         logger.info({ transactionId }, 'Transaction expired due to timeout');
       }
     },
-    { connection: connection as any, concurrency: 10 },
+    { connection: redis as any, concurrency: 10 },
   );
 
   return worker;

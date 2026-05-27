@@ -1,18 +1,17 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../lib/prisma.js';
+import { LedgerAccountType, LedgerEntry } from './ledger.types.js';
 import { ValidationError } from '../../utils/errors.js';
-import { LedgerEntry, LedgerEntryType, LedgerAccountType } from './ledger.types.js';
 
-const prisma = new PrismaClient();
-
-const SYSTEM_ACCOUNTS: Record<string, { name: string; type: LedgerAccountType; currency: string }> = {
-  '1000': { name: 'Cash - USD', type: LedgerAccountType.ASSET, currency: 'USD' },
-  '1001': { name: 'Cash - KES', type: LedgerAccountType.ASSET, currency: 'KES' },
-  '1002': { name: 'Cash - NGN', type: LedgerAccountType.ASSET, currency: 'NGN' },
-  '2000': { name: 'Customer Wallets', type: LedgerAccountType.LIABILITY, currency: 'USD' },
-  '3000': { name: 'Revenue - Fees', type: LedgerAccountType.REVENUE, currency: 'USD' },
-  '4000': { name: 'Revenue - FX Spread', type: LedgerAccountType.REVENUE, currency: 'USD' },
-  '5000': { name: 'Operating Expense', type: LedgerAccountType.EXPENSE, currency: 'USD' },
-};
+const SYSTEM_ACCOUNTS: Record<string, { name: string; type: LedgerAccountType; currency: string }> =
+  {
+    '1000': { name: 'Cash - USD', type: LedgerAccountType.ASSET, currency: 'USD' },
+    '1001': { name: 'Cash - KES', type: LedgerAccountType.ASSET, currency: 'KES' },
+    '1002': { name: 'Cash - NGN', type: LedgerAccountType.ASSET, currency: 'NGN' },
+    '2000': { name: 'Customer Wallets', type: LedgerAccountType.LIABILITY, currency: 'USD' },
+    '3000': { name: 'Revenue - Fees', type: LedgerAccountType.REVENUE, currency: 'USD' },
+    '4000': { name: 'Revenue - FX Spread', type: LedgerAccountType.REVENUE, currency: 'USD' },
+    '5000': { name: 'Operating Expense', type: LedgerAccountType.EXPENSE, currency: 'USD' },
+  };
 
 export async function postEntry(
   transactionId: string,

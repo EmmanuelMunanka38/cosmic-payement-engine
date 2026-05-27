@@ -1,10 +1,7 @@
 import { Worker } from 'bullmq';
-import Redis from 'ioredis';
-import { getConfig } from '../../config/index.js';
+import { redis } from '../../lib/redis.js';
 import { logger } from '../../config/logger.js';
 import { refreshRates } from '../../modules/exchangeRates/rates.cron.js';
-
-const connection = new Redis(getConfig().REDIS_URL, { maxRetriesPerRequest: null });
 
 export function createRateRefreshWorker() {
   const worker = new Worker(
@@ -12,7 +9,7 @@ export function createRateRefreshWorker() {
     async () => {
       await refreshRates();
     },
-    { connection: connection as any },
+    { connection: redis as any },
   );
 
   worker.on('failed', (job, err) => {

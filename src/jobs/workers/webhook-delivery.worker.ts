@@ -1,9 +1,6 @@
 import { Worker } from 'bullmq';
-import Redis from 'ioredis';
-import { getConfig } from '../../config/index.js';
+import { redis } from '../../lib/redis.js';
 import { logger } from '../../config/logger.js';
-
-const connection = new Redis(getConfig().REDIS_URL, { maxRetriesPerRequest: null });
 
 export function createWebhookDeliveryWorker() {
   const worker = new Worker(
@@ -21,7 +18,7 @@ export function createWebhookDeliveryWorker() {
 
       if (!res.ok) throw new Error(`Webhook delivery failed: ${res.status}`);
     },
-    { connection: connection as any, concurrency: 10 },
+    { connection: redis as any, concurrency: 10 },
   );
 
   worker.on('failed', (job, err) => {

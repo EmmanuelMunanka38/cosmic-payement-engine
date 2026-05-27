@@ -1,72 +1,31 @@
-import { PrismaClient, TransactionStatus } from '@prisma/client';
+import { TransactionStatus, KycStatus } from '@prisma/client';
 import { NotFoundError } from '../../utils/errors.js';
-
-const prisma = new PrismaClient();
+import * as adminRepo from './admin.repository.js';
+import * as userRepo from '../users/users.repository.js';
 
 export async function getUsers(cursor?: string, limit = 20) {
-  return prisma.user.findMany({
-    take: limit + 1,
-    ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-    orderBy: { createdAt: 'desc' },
-    select: {
-      id: true,
-      email: true,
-      phone: true,
-      firstName: true,
-      lastName: true,
-      country: true,
-      role: true,
-      kycStatus: true,
-      isActive: true,
-      createdAt: true,
-    },
-  });
+  return adminRepo.findUsersPaginated(cursor, limit);
 }
 
 export async function getTransactions(cursor?: string, limit = 20, status?: TransactionStatus) {
-  const where: any = {};
-  if (status) where.status = status;
-
-  return prisma.transaction.findMany({
-    where,
-    take: limit + 1,
-    ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-    orderBy: { createdAt: 'desc' },
-    include: { user: { select: { firstName: true, lastName: true, email: true } } },
-  });
+  return adminRepo.findTransactionsPaginated(cursor, limit, status);
 }
 
 export async function getTransactionStats() {
-  const [total, pending, success, failed, totalVolume] = await Promise.all([
-    prisma.transaction.count(),
-    prisma.transaction.count({ where: { status: 'PENDING' as any } }),
-    prisma.transaction.count({ where: { status: 'SUCCESS' as any } }),
-    prisma.transaction.count({ where: { status: 'FAILED' as any } }),
-    prisma.transaction.aggregate({ _sum: { sourceAmount: true }, where: { status: 'SUCCESS' as any } }),
-  ]);
-
-  return { total, pending, success, failed, totalVolume: totalVolume._sum.sourceAmount?.toNumber() || 0 };
+  return adminRepo.getTransactionStats();
 }
 
 export async function updateTransactionStatus(transactionId: string, status: TransactionStatus) {
-  const transaction = await prisma.transaction.findUnique({ where: { id: transactionId } });
-  if (!transaction) throw new NotFoundError('Transaction', transactionId);
-
-  return prisma.transaction.update({
-    where: { id: transactionId },
-    data: {
-      status,
-      ...(status === 'SUCCESS' ? { completedAt: new Date() } : {}),
-    },
-  });
+  return adminRepo.updateTransactionStatus(transactionId, status);
 }
 
-export async function updateUserKycStatus(userId: string, status: string, rejectedReason?: string) {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+export async function updateUserKycStatus(
+  userId: string,
+  status: KycStatus,
+  rejectedReason?: string,
+) {
+  const user = await userRepo.getUserById(userId);
   if (!user) throw new NotFoundError('User', userId);
 
-  return prisma.user.update({
-    where: { id: userId },
-    data: { kycStatus: status as any },
-  });
+  return userRepo.updateProfile(userId, { kycStatus: status });
 }
