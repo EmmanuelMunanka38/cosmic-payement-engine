@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { prisma } from '../../lib/prisma.js';
+import { prisma, getPrisma } from '../../lib/prisma.js';
+import type { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateTransactionInput } from '../../types/index.js';
 import { NotFoundError } from '../../utils/errors.js';
@@ -26,6 +27,7 @@ export async function createTransaction(input: CreateTransactionInput) {
       recipientName: input.recipientName,
       recipientProvider: input.recipientProvider as any,
       description: input.description,
+      environment: (input.environment ?? 'PRODUCTION') as any,
       metadata: input.metadata as Prisma.InputJsonValue,
       statusHistory: {
         create: {
@@ -41,11 +43,16 @@ export async function createTransaction(input: CreateTransactionInput) {
   });
 }
 
-export async function getTransactionById(transactionId: string, userId?: string) {
+export async function getTransactionById(
+  transactionId: string,
+  userId?: string,
+  _prisma?: PrismaClient,
+) {
+  const db = _prisma || prisma;
   const where: Prisma.TransactionWhereInput = { id: transactionId };
   if (userId) where.userId = userId;
 
-  const transaction = await prisma.transaction.findFirst({
+  const transaction = await db.transaction.findFirst({
     where,
     include: {
       statusHistory: { orderBy: { createdAt: 'desc' }, take: 10 },
@@ -98,14 +105,16 @@ export async function updateTransactionStatus(
   newStatus: string,
   reason?: string,
   extra?: Partial<{ providerTransactionId: string; failureReason: string; completedAt: Date }>,
+  _prisma?: PrismaClient,
 ) {
-  const transaction = await prisma.transaction.findUnique({
+  const db = _prisma || prisma;
+  const transaction = await db.transaction.findUnique({
     where: { id: transactionId },
   });
 
   if (!transaction) throw new NotFoundError('Transaction', transactionId);
 
-  return prisma.transaction.update({
+  return db.transaction.update({
     where: { id: transactionId },
     data: {
       status: newStatus as any,
