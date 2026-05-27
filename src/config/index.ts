@@ -6,6 +6,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
 
   DATABASE_URL: z.string().url(),
+  SANDBOX_DATABASE_URL: z.string().url().optional(),
   REDIS_URL: z.string().url(),
 
   JWT_SECRET: z.string().min(32),
