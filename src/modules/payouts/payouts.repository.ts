@@ -14,6 +14,7 @@ export async function createTransaction(data: {
   recipientName?: string;
   recipientProvider: PaymentProvider;
   description?: string;
+  environment?: string;
 }) {
   return prisma.transaction.create({
     data: {
@@ -31,6 +32,7 @@ export async function createTransaction(data: {
       recipientName: data.recipientName,
       recipientProvider: data.recipientProvider,
       description: data.description,
+      environment: (data.environment ?? 'PRODUCTION') as any,
     },
   });
 }
