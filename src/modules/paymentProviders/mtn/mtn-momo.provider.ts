@@ -1,6 +1,10 @@
 import { getConfig } from '../../../config/index.js';
 import { CurrencyCode, PaymentProvider } from '../../../types/enums.js';
-import { InitPaymentParams, PaymentResult, DisburseParams } from '../interfaces/payment-provider.interface.js';
+import {
+  InitPaymentParams,
+  PaymentResult,
+  DisburseParams,
+} from '../interfaces/payment-provider.interface.js';
 import { BaseMobileMoneyProvider } from '../interfaces/mobile-money.interface.js';
 import { ProviderError } from '../../../utils/errors.js';
 
@@ -27,9 +31,10 @@ export class MtnMomoProvider extends BaseMobileMoneyProvider {
       subscriptionKey: config.MTN_MOMO_SUBSCRIPTION_KEY || 'mock_sub_key',
       environment: config.MTN_MOMO_ENVIRONMENT,
     };
-    this.baseUrl = this.creds.environment === 'production'
-      ? 'https://momoe.api.mtn.com'
-      : 'https://sandbox.momodeveloper.mtn.com';
+    this.baseUrl =
+      this.creds.environment === 'production'
+        ? 'https://momoe.api.mtn.com'
+        : 'https://sandbox.momodeveloper.mtn.com';
   }
 
   getProviderName(): PaymentProvider {
@@ -72,12 +77,18 @@ export class MtnMomoProvider extends BaseMobileMoneyProvider {
     });
 
     if (!res.ok) throw new ProviderError('MTN_MOMO', 'Failed to get API key');
-    const data = await res.json() as { apiKey: string };
+    const data = (await res.json()) as { apiKey: string };
     return data.apiKey;
   }
 
   private async getAccessToken(): Promise<string> {
     if (this.token && Date.now() < this.tokenExpiry) return this.token;
+
+    if (this.creds.apiKey === 'mock_key') {
+      this.token = 'mock_access_token';
+      this.tokenExpiry = Date.now() + 3600000;
+      return this.token;
+    }
 
     const user = await this.ensureApiUser();
     const apiKey = await this.getApiKey();
@@ -92,7 +103,7 @@ export class MtnMomoProvider extends BaseMobileMoneyProvider {
     });
 
     if (!res.ok) throw new ProviderError('MTN_MOMO', 'Failed to get access token');
-    const data = await res.json() as { access_token: string; expires_in: number };
+    const data = (await res.json()) as { access_token: string; expires_in: number };
     this.token = data.access_token;
     this.tokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
     return this.token;
@@ -144,22 +155,31 @@ export class MtnMomoProvider extends BaseMobileMoneyProvider {
     };
   }
 
-  async checkPaymentStatus(providerTransactionId: string): Promise<{ status: string; providerData?: unknown }> {
+  async checkPaymentStatus(
+    providerTransactionId: string,
+  ): Promise<{ status: string; providerData?: unknown }> {
     if (providerTransactionId.startsWith('MTN_MOCK')) {
-      return { status: 'success', providerData: { financialTransactionId: `FT_MOCK_${Date.now()}` } };
+      return {
+        status: 'success',
+        providerData: { financialTransactionId: `FT_MOCK_${Date.now()}` },
+      };
     }
 
     const token = await this.getAccessToken();
-    const res = await fetch(`${this.baseUrl}/collection/v1_0/requesttopay/${providerTransactionId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'X-Target-Environment': this.creds.environment === 'production' ? 'production' : 'sandbox',
-        'Ocp-Apim-Subscription-Key': this.creds.subscriptionKey,
+    const res = await fetch(
+      `${this.baseUrl}/collection/v1_0/requesttopay/${providerTransactionId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'X-Target-Environment':
+            this.creds.environment === 'production' ? 'production' : 'sandbox',
+          'Ocp-Apim-Subscription-Key': this.creds.subscriptionKey,
+        },
       },
-    });
+    );
 
     if (!res.ok) return { status: 'unknown', providerData: null };
-    const data = await res.json() as any;
+    const data = (await res.json()) as any;
     return { status: data.status === 'SUCCESSFUL' ? 'success' : 'failed', providerData: data };
   }
 
@@ -204,7 +224,10 @@ export class MtnMomoProvider extends BaseMobileMoneyProvider {
     return { available: 500000, currency: CurrencyCode.UGX };
   }
 
-  async handleWebhook(rawBody: unknown, headers: unknown): Promise<{ event: string; data: unknown }> {
+  async handleWebhook(
+    rawBody: unknown,
+    headers: unknown,
+  ): Promise<{ event: string; data: unknown }> {
     return { event: 'mtn_momo.callback', data: rawBody };
   }
 }

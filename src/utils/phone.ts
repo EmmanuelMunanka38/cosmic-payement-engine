@@ -1,27 +1,3 @@
-import { CurrencyCode } from '../types/enums.js';
-
-const FIAT_DECIMALS: Record<string, number> = {
-  USD: 2, EUR: 2, GBP: 2, KES: 2, NGN: 2, UGX: 0, GHS: 2, TZS: 2, XAF: 0, XOF: 0, RWF: 0, ZMW: 2, MAD: 2, ZAR: 2,
-};
-
-export function getDecimals(currency: string): number {
-  return FIAT_DECIMALS[currency] ?? 2;
-}
-
-export function formatAmount(amount: number, currency: string): string {
-  return amount.toFixed(getDecimals(currency));
-}
-
-export function toMinorUnits(amount: number, currency: string): number {
-  return Math.round(amount * Math.pow(10, getDecimals(currency)));
-}
-
-export function fromMinorUnits(amount: number, currency: string): number {
-  return amount / Math.pow(10, getDecimals(currency));
-}
-
-export const AFRICAN_CURRENCIES = ['KES', 'NGN', 'UGX', 'GHS', 'TZS', 'XAF', 'XOF', 'RWF', 'ZMW', 'MAD', 'ZAR'];
-
 interface NetworkRule {
   prefix: string;
   network: string;
@@ -56,18 +32,33 @@ const NETWORK_RULES: NetworkRule[] = [
   { prefix: '+26097', network: 'MTN_MOMO', country: 'ZM', currency: 'ZMW' },
 ];
 
-export function detectNetwork(phone: string): { network: string | null; country: string | null; currency: string | null; confidence: number } {
+export function detectNetwork(phone: string): {
+  network: string | null;
+  country: string | null;
+  currency: string | null;
+  confidence: number;
+} {
   const normalized = phone.replace(/[^+\d]/g, '');
   const matched = NETWORK_RULES.find((rule) => normalized.startsWith(rule.prefix));
 
   if (matched) {
-    return { network: matched.network, country: matched.country, currency: matched.currency, confidence: 1.0 };
+    return {
+      network: matched.network,
+      country: matched.country,
+      currency: matched.currency,
+      confidence: 1.0,
+    };
   }
 
   const twoDigit = normalized.slice(0, 5);
   const partial = NETWORK_RULES.find((rule) => twoDigit.startsWith(rule.prefix.slice(0, 5)));
   if (partial) {
-    return { network: partial.network, country: partial.country, currency: partial.currency, confidence: 0.6 };
+    return {
+      network: partial.network,
+      country: partial.country,
+      currency: partial.currency,
+      confidence: 0.6,
+    };
   }
 
   return { network: null, country: null, currency: null, confidence: 0 };
