@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../lib/prisma.js';
 import { ForbiddenError, AuthError } from '../utils/errors.js';
 import { JwtPayload } from '../types/index.js';
+import { Environment } from '../types/enums.js';
 
 export async function apiKeyAuth(req: Request, _res: Response, next: NextFunction): Promise<void> {
   const apiKey = req.headers['x-api-key'] as string;
@@ -39,6 +40,8 @@ export async function apiKeyAuth(req: Request, _res: Response, next: NextFunctio
     email: apiKeyRecord.user.email,
     role: apiKeyRecord.user.role,
   };
+
+  req.environment = apiKeyRecord.environment as Environment;
 
   next();
 }
