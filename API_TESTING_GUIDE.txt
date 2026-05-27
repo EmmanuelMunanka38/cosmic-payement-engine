@@ -40,9 +40,17 @@ Swagger UI: http://localhost:3000/api-docs
   30. Admin — Approve Transaction
   31. Admin — Reject Transaction
   32. Admin — Update KYC Status
-  33. API Keys — Create
-  34. API Keys — List
-  35. API Keys — Revoke
+   33. API Keys — Create
+   34. API Keys — List
+   35. API Keys — Revoke
+   36. Sandbox — Create API Key
+   37. Sandbox — List API Keys
+   38. Sandbox — List Transactions
+   39. Sandbox — Simulate Stripe
+   40. Sandbox — Simulate M-Pesa
+   41. Sandbox — Simulate Payout
+   42. Sandbox — Reset
+   43. Sandbox — End-to-End Flow
 
 
 ====================================================================
@@ -981,6 +989,229 @@ Then use {{idem_key}} in the header.
   X-API-Key: {{api_key}}
 
   (Replace Authorization: Bearer header with X-API-Key header)
+
+
+====================================================================
+  36. Sandbox — Create API Key
+  37. Sandbox — List API Keys
+  38. Sandbox — List Transactions
+  39. Sandbox — Simulate Stripe
+  40. Sandbox — Simulate M-Pesa
+  41. Sandbox — Simulate Payout
+  42. Sandbox — Reset
+  43. Sandbox — End-to-End Flow
+
+
+====================================================================
+  SANDBOX TESTING ENVIRONMENT
+====================================================================
+
+  The sandbox environment uses a SEPARATE PostgreSQL database
+  (cosmic_payment_sandbox) for full data isolation. All sandbox
+  endpoints are protected by JWT Bearer token.
+
+  Prerequisite: Create the sandbox database:
+    createdb cosmic_payment_sandbox
+    npx prisma db push --accept-data-loss
+
+
+--------------------------------------------------------------------
+  36. SANDBOX — CREATE API KEY
+--------------------------------------------------------------------
+
+  Creates a sand_ prefix API key and auto-funds sandbox wallets
+  (KES 100k, UGX 100k, NGN 100k, GHS 100k, USD 1k).
+
+  POST  {{base_url}}/api/v1/sandbox/api-keys
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+
+  Body:
+  {
+    "name": "My Sandbox App",
+    "scopes": ["transactions:read", "transactions:write"]
+  }
+
+  Response 201:
+  {
+    "status": "success",
+    "data": {
+      "apiKey": "sand_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "name": "My Sandbox App",
+      "scopes": ["transactions:read", "transactions:write"],
+      "prefix": "sand_xxx",
+      "lastCharacters": "abcd",
+      "environment": "SANDBOX",
+      "warning": "Save this API key — it will not be shown again"
+    }
+  }
+
+  ⚠️ Save the sandbox API key:
+    pm.collectionVariables.set("sandbox_api_key", json.data.apiKey);
+
+
+--------------------------------------------------------------------
+  37. SANDBOX — LIST API KEYS
+--------------------------------------------------------------------
+
+  GET  {{base_url}}/api/v1/sandbox/api-keys
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": "key-uuid",
+        "name": "My Sandbox App",
+        "keyPrefix": "sand_xxx",
+        "lastCharacters": "abcd",
+        "scopes": ["transactions:read", "transactions:write"],
+        "isActive": true,
+        "createdAt": "..."
+      }
+    ]
+  }
+
+
+--------------------------------------------------------------------
+  38. SANDBOX — LIST TRANSACTIONS
+--------------------------------------------------------------------
+
+  GET  {{base_url}}/api/v1/sandbox/transactions?cursor=<cursor>&limit=20
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": [ ... sandbox transactions ... ],
+    "meta": { "hasMore": false, "total": 5 }
+  }
+
+
+--------------------------------------------------------------------
+  39. SANDBOX — SIMULATE STRIPE WEBHOOK
+--------------------------------------------------------------------
+
+  Simulates a Stripe webhook event on an existing sandbox transaction.
+
+  POST  {{base_url}}/api/v1/sandbox/simulate/stripe
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+
+  Events: payment_intent.succeeded, payment_intent.failed, charge.refunded
+
+  Body:
+  {
+    "event": "payment_intent.succeeded",
+    "transactionId": "{{sandbox_txn_id}}"
+  }
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "id": "txn-uuid",
+      "status": "SUCCESS",
+      ...
+    }
+  }
+
+
+--------------------------------------------------------------------
+  40. SANDBOX — SIMULATE M-PESA CALLBACK
+--------------------------------------------------------------------
+
+  Simulates an M-Pesa callback on an existing sandbox transaction.
+
+  POST  {{base_url}}/api/v1/sandbox/simulate/mpesa
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+
+  Result codes: 0 (success), 1, 2, 1032 (failure)
+
+  Body:
+  {
+    "resultCode": "0",
+    "transactionId": "{{sandbox_txn_id}}"
+  }
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "id": "txn-uuid",
+      "status": "SUCCESS",
+      "providerTransactionId": "SIM_MPESA_...",
+      ...
+    }
+  }
+
+
+--------------------------------------------------------------------
+  41. SANDBOX — SIMULATE PAYOUT RESOLUTION
+--------------------------------------------------------------------
+
+  Resolves a pending sandbox payout to success or failure.
+
+  POST  {{base_url}}/api/v1/sandbox/simulate/payout
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+
+  Outcomes: success, failed
+
+  Body:
+  {
+    "transactionId": "{{sandbox_txn_id}}",
+    "outcome": "success"
+  }
+
+  Response 200:
+  {
+    "status": "success",
+    "data": {
+      "id": "txn-uuid",
+      "status": "SUCCESS",
+      "providerTransactionId": "SIM_PO_...",
+      ...
+    }
+  }
+
+
+--------------------------------------------------------------------
+  42. SANDBOX — RESET DATA
+--------------------------------------------------------------------
+
+  Wipes ALL sandbox data for the authenticated user (API keys,
+  transactions, wallets, webhook events). Fresh start.
+
+  POST  {{base_url}}/api/v1/sandbox/reset
+  Authorization: Bearer {{token}}
+
+  Response 200:
+  {
+    "status": "success",
+    "data": { "message": "Sandbox data reset successfully" }
+  }
+
+
+--------------------------------------------------------------------
+  43. SANDBOX — END-TO-END TESTING FLOW
+--------------------------------------------------------------------
+
+  1. Login                      → POST /api/v1/auth/login
+  2. Create Sandbox API Key     → POST /api/v1/sandbox/api-keys
+     (auto-funds sandbox wallets)
+  3. List Sandbox Keys          → GET  /api/v1/sandbox/api-keys
+  4. Create a payout or txn     → POST /api/v1/payouts
+     (use X-API-Key: {{sandbox_api_key}} or Bearer token)
+     (payouts auto-succeed in sandbox without calling real providers)
+  5. List Sandbox Transactions  → GET  /api/v1/sandbox/transactions
+  6. Simulate Stripe webhook    → POST /api/v1/sandbox/simulate/stripe
+  7. Simulate M-Pesa callback   → POST /api/v1/sandbox/simulate/mpesa
+  8. Simulate Payout resolution → POST /api/v1/sandbox/simulate/payout
+  9. Reset Sandbox              → POST /api/v1/sandbox/reset
+     (clean slate for next test round)
 
 
 ====================================================================
