@@ -1,7 +1,6 @@
-import { PrismaClient, CurrencyCode } from '@prisma/client';
+import { CurrencyCode } from '@prisma/client';
+import { prisma } from '../../lib/prisma.js';
 import { NotFoundError, ValidationError } from '../../utils/errors.js';
-
-const prisma = new PrismaClient();
 
 export async function createWallet(userId: string, currency: CurrencyCode) {
   const existing = await prisma.wallet.findUnique({
@@ -74,15 +73,23 @@ export async function debitWallet(
   }
 }
 
-export async function creditWallet(walletId: string, amount: number): Promise<void> {
-  await prisma.wallet.update({
-    where: { id: walletId },
+export async function creditWallet(
+  walletId: string,
+  amount: number,
+  version: number,
+): Promise<void> {
+  const result = await prisma.wallet.updateMany({
+    where: { id: walletId, version },
     data: {
       balance: { increment: amount },
       availableBalance: { increment: amount },
       version: { increment: 1 },
     },
   });
+
+  if (result.count === 0) {
+    throw new ValidationError('Concurrent modification detected during credit');
+  }
 }
 
 export async function getWalletBalance(userId: string, currency: CurrencyCode) {
