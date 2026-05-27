@@ -1,6 +1,6 @@
 # Cosmic Payment — Build Checklist
 
-## Phase 1: Foundation ✅
+## Phase 1: Foundation 
 
 - [x] Project directory structure
 - [x] AGENTS.md — AI rules
@@ -13,157 +13,173 @@
 - [x] Dockerfile — multi-stage production build
 - [x] Prisma schema — all models & enums
 
-## Phase 2: Core Infrastructure
+## Phase 2: Core Infrastructure 
 
-- [ ] `src/config/index.ts` — validated config singleton
-- [ ] `src/config/logger.ts` — Pino logger
-- [ ] `src/types/enums.ts` — all enums
-- [ ] `src/types/index.ts` — shared types
-- [ ] `src/utils/errors.ts` — AppError classes
-- [ ] `src/utils/response.ts` — standardized response helpers
-- [ ] `src/utils/currency.ts` — currency formatting
-- [ ] `src/utils/phone.ts` — phone parsing + network detection
-- [ ] `src/utils/pagination.ts` — cursor-based pagination
+- [x] `src/config/index.ts` — validated config singleton
+- [x] `src/config/logger.ts` — Pino logger
+- [x] `src/types/enums.ts` — all enums
+- [x] `src/types/index.ts` — shared types
+- [x] `src/utils/errors.ts` — AppError classes
+- [x] `src/utils/response.ts` — standardized response helpers
+- [x] `src/utils/currency.ts` — currency formatting
+- [x] `src/utils/phone.ts` — phone parsing + network detection
+- [x] `src/utils/pagination.ts` — cursor-based pagination
 
-## Phase 3: Middleware
+## Phase 3: Middleware 
 
-- [ ] `src/middleware/auth.ts` — JWT verification
-- [ ] `src/middleware/apiKeyAuth.ts` — API key auth for B2B
-- [ ] `src/middleware/rateLimiter.ts` — Redis sliding window
-- [ ] `src/middleware/idempotency.ts` — idempotency key check
-- [ ] `src/middleware/validate.ts` — Zod validation
-- [ ] `src/middleware/errorHandler.ts` — global error handler
-- [ ] `src/middleware/requestLogger.ts` — Pino request logging
-- [ ] `src/middleware/requireKyc.ts` — KYC gate
+- [x] `src/middleware/auth.ts` — JWT verification
+- [x] `src/middleware/apiKeyAuth.ts` — API key auth for B2B
+- [x] `src/middleware/rateLimiter.ts` — Redis sliding window
+- [x] `src/middleware/idempotency.ts` — idempotency key check
+- [x] `src/middleware/validate.ts` — Zod validation
+- [x] `src/middleware/errorHandler.ts` — global error handler
+- [x] `src/middleware/requestLogger.ts` — Pino request logging
+- [x] `src/middleware/requireKyc.ts` — KYC gate
 
-## Phase 4: Auth Module
+## Phase 4: Auth Module 
 
-- [ ] `src/modules/auth/auth.validation.ts`
-- [ ] `src/modules/auth/auth.service.ts`
-- [ ] `src/modules/auth/auth.controller.ts`
-- [ ] `src/modules/auth/auth.routes.ts`
-- [ ] Auth tests
+- [x] `src/modules/auth/auth.validation.ts`
+- [x] `src/modules/auth/auth.repository.ts`
+- [x] `src/modules/auth/auth.service.ts`
+- [x] `src/modules/auth/auth.controller.ts`
+- [x] `src/modules/auth/auth.routes.ts`
+- [x] Auth tests (11 tests, all passing)
 
-## Phase 5: User Module
+## Phase 5: User Module 
 
-- [ ] `src/modules/users/users.validation.ts`
-- [ ] `src/modules/users/users.repository.ts`
-- [ ] `src/modules/users/users.service.ts`
-- [ ] `src/modules/users/users.controller.ts`
-- [ ] `src/modules/users/users.routes.ts`
-- [ ] User tests
+- [x] `src/modules/users/users.validation.ts`
+- [x] `src/modules/users/users.repository.ts`
+- [x] `src/modules/users/users.service.ts`
+- [x] `src/modules/users/users.controller.ts`
+- [x] `src/modules/users/users.routes.ts`
+- [x] User tests (4 tests, all passing)
 
-## Phase 6: Wallet Module
+## Phase 6: Wallet Module 
 
-- [ ] `src/modules/wallets/wallets.validation.ts`
-- [ ] `src/modules/wallets/wallets.repository.ts`
-- [ ] `src/modules/wallets/wallets.service.ts`
-- [ ] `src/modules/wallets/wallets.controller.ts`
-- [ ] `src/modules/wallets/wallets.routes.ts`
-- [ ] Wallet tests
+- [x] `src/modules/wallets/wallets.validation.ts`
+- [x] `src/modules/wallets/wallets.repository.ts`
+- [x] `src/modules/wallets/wallets.service.ts`
+- [x] `src/modules/wallets/wallets.controller.ts`
+- [x] `src/modules/wallets/wallets.routes.ts`
+- [x] Wallet tests (7 tests, all passing)
 
-## Phase 7: Exchange Rates Module
+## Phase 7: Exchange Rates Module 
 
-- [ ] `src/modules/exchangeRates/rates.validation.ts`
-- [ ] `src/modules/exchangeRates/rates.repository.ts`
-- [ ] `src/modules/exchangeRates/rates.service.ts`
-- [ ] `src/modules/exchangeRates/rates.controller.ts`
-- [ ] `src/modules/exchangeRates/rates.routes.ts`
-- [ ] `src/modules/exchangeRates/rates.cron.ts`
-- [ ] Rates tests
+- [x] `src/modules/exchangeRates/rates.validation.ts`
+- [x] `src/modules/exchangeRates/rates.repository.ts`
+- [x] `src/modules/exchangeRates/rates.service.ts`
+- [x] `src/modules/exchangeRates/rates.controller.ts`
+- [x] `src/modules/exchangeRates/rates.routes.ts`
+- [x] `src/modules/exchangeRates/rates.cron.ts`
+- [x] Rates tests (8 tests, all passing)
 
-## Phase 8: Transaction Module
+## Phase 8: Transaction Module 
 
-- [ ] `src/modules/transactions/transaction.state.ts`
-- [ ] `src/modules/transactions/transactions.validation.ts`
-- [ ] `src/modules/transactions/transactions.repository.ts`
-- [ ] `src/modules/transactions/transactions.service.ts`
-- [ ] `src/modules/transactions/transactions.controller.ts`
-- [ ] `src/modules/transactions/transactions.routes.ts`
-- [ ] Transaction tests
+- [x] `src/modules/transactions/transaction.state.ts`
+- [x] `src/modules/transactions/transactions.validation.ts`
+- [x] `src/modules/transactions/transactions.repository.ts`
+- [x] `src/modules/transactions/transactions.service.ts`
+- [x] `src/modules/transactions/transactions.controller.ts`
+- [x] `src/modules/transactions/transactions.routes.ts`
+- [x] Transaction tests (13 tests, all passing)
 
-## Phase 9: Payment Provider Adapters
+## Phase 9: Payment Provider Adapters 
 
-- [ ] `src/modules/paymentProviders/interfaces/payment-provider.interface.ts`
-- [ ] `src/modules/paymentProviders/interfaces/card-provider.interface.ts`
-- [ ] `src/modules/paymentProviders/interfaces/mobile-money.interface.ts`
-- [ ] `src/modules/paymentProviders/provider-registry.ts`
-- [ ] `src/modules/paymentProviders/phone-network-detector.ts`
-- [ ] **Stripe** adapter (behind CardProvider interface)
-- [ ] **M-Pesa** adapter (Daraja API)
-- [ ] **MTN MoMo** adapter
-- [ ] **Airtel Money** adapter
-- [ ] **Orange Money** adapter
-- [ ] **Wave** adapter
+- [x] `src/modules/paymentProviders/interfaces/payment-provider.interface.ts`
+- [x] `src/modules/paymentProviders/interfaces/card-provider.interface.ts`
+- [x] `src/modules/paymentProviders/interfaces/mobile-money.interface.ts`
+- [x] `src/modules/paymentProviders/provider-registry.ts`
+- [x] `src/modules/paymentProviders/phone-network-detector.ts`
+- [x] **Stripe** adapter (behind CardProvider interface)
+- [x] **M-Pesa** adapter (Daraja API)
+- [x] **MTN MoMo** adapter
+- [x] **Airtel Money** adapter
+- [x] **Orange Money** adapter
+- [x] **Wave** adapter
 
-## Phase 10: Payout Module
+## Phase 10: Payout Module 
 
-- [ ] `src/modules/payouts/payouts.validation.ts`
-- [ ] `src/modules/payouts/payouts.repository.ts`
-- [ ] `src/modules/payouts/payouts.service.ts`
-- [ ] `src/modules/payouts/payouts.controller.ts`
-- [ ] `src/modules/payouts/payouts.routes.ts`
-- [ ] Payout tests
+- [x] `src/modules/payouts/payouts.validation.ts`
+- [x] `src/modules/payouts/payouts.repository.ts`
+- [x] `src/modules/payouts/payouts.service.ts`
+- [x] `src/modules/payouts/payouts.controller.ts`
+- [x] `src/modules/payouts/payouts.routes.ts`
+- [x] Payout tests (5 tests, all passing)
 
-## Phase 11: Webhooks Module
+## Phase 11: Webhooks Module 
 
-- [ ] `src/modules/webhooks/webhooks.controller.ts`
-- [ ] `src/modules/webhooks/webhooks.service.ts`
-- [ ] `src/modules/webhooks/webhooks.routes.ts`
+- [x] `src/modules/webhooks/webhooks.controller.ts`
+- [x] `src/modules/webhooks/webhooks.service.ts`
+- [x] `src/modules/webhooks/webhooks.repository.ts`
+- [x] `src/modules/webhooks/webhooks.routes.ts`
+- [x] Webhooks tests (3 tests, all passing)
 
-## Phase 12: KYC Module
+## Phase 12: KYC Module 
 
-- [ ] `src/modules/kyc/kyc.validation.ts`
-- [ ] `src/modules/kyc/kyc.service.ts`
-- [ ] `src/modules/kyc/kyc.controller.ts`
-- [ ] `src/modules/kyc/kyc.routes.ts`
+- [x] `src/modules/kyc/kyc.validation.ts`
+- [x] `src/modules/kyc/kyc.service.ts`
+- [x] `src/modules/kyc/kyc.repository.ts`
+- [x] `src/modules/kyc/kyc.controller.ts`
+- [x] `src/modules/kyc/kyc.routes.ts`
+- [x] KYC tests (6 tests, all passing)
 
-## Phase 13: Admin Module
+## Phase 13: Admin Module 
 
-- [ ] `src/modules/admin/admin.service.ts`
-- [ ] `src/modules/admin/admin.controller.ts`
-- [ ] `src/modules/admin/admin.routes.ts`
-- [ ] `src/modules/admin/admin.middleware.ts`
+- [x] `src/modules/admin/admin.service.ts`
+- [x] `src/modules/admin/admin.repository.ts`
+- [x] `src/modules/admin/admin.controller.ts`
+- [x] `src/modules/admin/admin.routes.ts`
+- [x] `src/modules/admin/admin.middleware.ts`
+- [x] Admin tests (6 tests, all passing)
 
-## Phase 14: Ledger Module
+## Phase 14: Ledger Module 
 
-- [ ] `src/modules/ledger/ledger.types.ts`
-- [ ] `src/modules/ledger/ledger.validation.ts`
-- [ ] `src/modules/ledger/ledger.service.ts`
+- [x] `src/modules/ledger/ledger.types.ts`
+- [x] `src/modules/ledger/ledger.validation.ts`
+- [x] `src/modules/ledger/ledger.service.ts`
+- [ ] Ledger tests (not yet written)
 
-## Phase 15: API Keys Module
+## Phase 15: API Keys Module 
 
-- [ ] `src/modules/apiKeys/apiKeys.validation.ts`
-- [ ] `src/modules/apiKeys/apiKeys.service.ts`
-- [ ] `src/modules/apiKeys/apiKeys.controller.ts`
-- [ ] `src/modules/apiKeys/apiKeys.routes.ts`
+- [x] `src/modules/apiKeys/apiKeys.validation.ts`
+- [x] `src/modules/apiKeys/apiKeys.service.ts`
+- [x] `src/modules/apiKeys/apiKeys.repository.ts`
+- [x] `src/modules/apiKeys/apiKeys.controller.ts`
+- [x] `src/modules/apiKeys/apiKeys.routes.ts`
+- [x] API Keys tests (4 tests, all passing)
 
-## Phase 16: Jobs & Queues
+## Phase 16: Jobs & Queues 
 
-- [ ] `src/jobs/queues.ts` — BullMQ queue definitions
-- [ ] `src/jobs/workers/webhook-delivery.worker.ts`
-- [ ] `src/jobs/workers/payout-settlement.worker.ts`
-- [ ] `src/jobs/workers/transaction-timeout.worker.ts`
-- [ ] `src/jobs/workers/rate-refresh.worker.ts`
+- [x] `src/jobs/queues.ts` — BullMQ queue definitions
+- [x] `src/jobs/workers/webhook-delivery.worker.ts`
+- [x] `src/jobs/workers/payout-settlement.worker.ts`
+- [x] `src/jobs/workers/transaction-timeout.worker.ts`
+- [x] `src/jobs/workers/rate-refresh.worker.ts`
 
-## Phase 17: App Entry & Server
+## Phase 17: App Entry & Server 
 
-- [ ] `src/app.ts` — Express app with all middleware + routes
-- [ ] `src/index.ts` — Server entry point
+- [x] `src/app.ts` — Express app with all middleware + routes
+- [x] `src/index.ts` — Server entry point
 
-## Phase 18: Tests
+## Phase 18: Tests 
 
-- [ ] Vitest config
-- [ ] Auth module tests
-- [ ] User module tests
-- [ ] Wallet module tests
-- [ ] Transaction module tests
-- [ ] Provider adapter tests (sandbox)
-- [ ] E2E flow tests
+- [x] Vitest setup (`vitest.setup.ts`)
+- [x] Auth module tests (11 tests)
+- [x] User module tests (4 tests)
+- [x] Wallet module tests (7 tests)
+- [x] Transaction module tests (13 tests)
+- [x] Exchange rates module tests (8 tests)
+- [x] Payout module tests (5 tests)
+- [x] Webhooks module tests (3 tests)
+- [x] KYC module tests (6 tests)
+- [x] Admin module tests (6 tests)
+- [x] API Keys module tests (4 tests)
+- [x] Provider adapter tests (35 tests)
+- [ ] E2E flow tests (not yet written)
 
-## Phase 19: Polish
+## Phase 19: Polish 
 
-- [ ] Swagger/OpenAPI docs
-- [ ] Prisma seed script
-- [ ] GitHub Actions CI
-- [ ] Production readiness review
+- [x] Swagger/OpenAPI docs (`src/config/swagger.ts`)
+- [x] Prisma seed script (`prisma/seed.ts`)
+- [x] GitHub Actions CI (`.github/workflows/ci.yml`)
+- [ ] Production readiness review (not yet done)

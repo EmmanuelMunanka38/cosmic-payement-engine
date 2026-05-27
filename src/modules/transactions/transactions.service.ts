@@ -1,25 +1,33 @@
-import { PrismaClient, TransactionStatus } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
+import { TransactionStatus } from '@prisma/client';
 import { JwtPayload, CreateTransactionInput } from '../../types/index.js';
 import { TransactionType, CurrencyCode } from '../../types/enums.js';
-import { InsufficientBalanceError, ValidationError } from '../../utils/errors.js';
+import { ValidationError } from '../../utils/errors.js';
 import * as transactionRepo from './transactions.repository.js';
 import * as walletRepo from '../wallets/wallets.repository.js';
+import * as userRepo from '../users/users.repository.js';
 import * as rateService from '../exchangeRates/rates.service.js';
 import { detectNetwork } from '../../utils/phone.js';
 import { CrossBorderInput, PayInInput, PayOutInput } from './transactions.validation.js';
 
-const prisma = new PrismaClient();
-
-export async function sendInternal(user: JwtPayload, input: { recipientEmail?: string; recipientPhone?: string; amount: number; currency: CurrencyCode; description?: string }, idempotencyKey: string) {
+export async function sendInternal(
+  user: JwtPayload,
+  input: {
+    recipientEmail?: string;
+    recipientPhone?: string;
+    amount: number;
+    currency: CurrencyCode;
+    description?: string;
+  },
+  idempotencyKey: string,
+) {
   const existing = await transactionRepo.checkIdempotency(idempotencyKey);
   if (existing) return existing;
 
   let recipient;
   if (input.recipientEmail) {
-    recipient = await prisma.user.findUnique({ where: { email: input.recipientEmail } });
+    recipient = await userRepo.findUserByEmail(input.recipientEmail);
   } else if (input.recipientPhone) {
-    recipient = await prisma.user.findFirst({ where: { phone: input.recipientPhone } });
+    recipient = await userRepo.findUserByPhone(input.recipientPhone);
   }
 
   if (!recipient) throw new ValidationError('Recipient not found');
@@ -29,7 +37,7 @@ export async function sendInternal(user: JwtPayload, input: { recipientEmail?: s
   const recipientWallet = await walletRepo.getWalletByCurrency(recipient.id, input.currency);
 
   await walletRepo.debitWallet(senderWallet.id, input.amount, senderWallet.version);
-  await walletRepo.creditWallet(recipientWallet.id, input.amount);
+  await walletRepo.creditWallet(recipientWallet.id, input.amount, recipientWallet.version);
 
   const transaction = await transactionRepo.createTransaction({
     userId: user.userId,
@@ -47,7 +55,11 @@ export async function sendInternal(user: JwtPayload, input: { recipientEmail?: s
   return transactionRepo.getTransactionById(transaction.id);
 }
 
-export async function crossBorderSend(user: JwtPayload, input: CrossBorderInput, idempotencyKey: string) {
+export async function crossBorderSend(
+  user: JwtPayload,
+  input: CrossBorderInput,
+  idempotencyKey: string,
+) {
   const existing = await transactionRepo.checkIdempotency(idempotencyKey);
   if (existing) return existing;
 
@@ -57,7 +69,11 @@ export async function crossBorderSend(user: JwtPayload, input: CrossBorderInput,
     provider = (detected.network || undefined) as any;
   }
 
-  const quote = await rateService.getQuote(input.sourceCurrency, input.destinationCurrency, input.sourceAmount);
+  const quote = await rateService.getQuote(
+    input.sourceCurrency,
+    input.destinationCurrency,
+    input.sourceAmount,
+  );
 
   if (!quote) throw new ValidationError('Unable to get exchange rate quote');
 

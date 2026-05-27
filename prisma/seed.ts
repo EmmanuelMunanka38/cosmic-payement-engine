@@ -1,8 +1,7 @@
-import { PrismaClient, CurrencyCode, PaymentProvider } from '@prisma/client';
+import { CurrencyCode, PaymentProvider } from '@prisma/client';
+import { prisma } from '../src/lib/prisma.js';
 import bcrypt from 'bcryptjs';
 import { refreshRates } from '../src/modules/exchangeRates/rates.cron.js';
-
-const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding database...');

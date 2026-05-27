@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../lib/prisma.js';
 import { NotFoundError, ValidationError } from '../../utils/errors.js';
 import { UpdateProfileInput } from './users.validation.js';
-
-const prisma = new PrismaClient();
 
 export async function getUserById(userId: string) {
   const user = await prisma.user.findUnique({
@@ -52,6 +50,14 @@ export async function updateProfile(userId: string, input: UpdateProfileInput) {
   });
 
   return user;
+}
+
+export async function findUserByEmail(email: string) {
+  return prisma.user.findUnique({ where: { email } });
+}
+
+export async function findUserByPhone(phone: string) {
+  return prisma.user.findFirst({ where: { phone } });
 }
 
 export async function getUsersPaginated(cursor?: string, limit = 20) {

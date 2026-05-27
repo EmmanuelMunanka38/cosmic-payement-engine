@@ -1,11 +1,8 @@
 import { Queue, QueueOptions } from 'bullmq';
-import Redis from 'ioredis';
-import { getConfig } from '../config/index.js';
-
-const connection = new Redis(getConfig().REDIS_URL, { maxRetriesPerRequest: null });
+import { redis } from '../lib/redis.js';
 
 const defaultOptions: QueueOptions = {
-  connection: connection as any,
+  connection: redis as any,
   defaultJobOptions: {
     attempts: 3,
     backoff: { type: 'exponential', delay: 2000 },

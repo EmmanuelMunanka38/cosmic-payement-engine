@@ -1,9 +1,6 @@
-import { PrismaClient, CurrencyCode } from '@prisma/client';
-import Redis from 'ioredis';
-import { getConfig } from '../../config/index.js';
-
-const prisma = new PrismaClient();
-const redis = new Redis(getConfig().REDIS_URL);
+import { CurrencyCode } from '@prisma/client';
+import { prisma } from '../../lib/prisma.js';
+import { redis } from '../../lib/redis.js';
 
 const RATE_CACHE_TTL = 300;
 

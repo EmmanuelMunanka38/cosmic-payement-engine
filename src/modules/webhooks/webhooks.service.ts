@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { PaymentProvider } from '../../types/enums.js';
-
-const prisma = new PrismaClient();
+import * as webhookRepo from './webhooks.repository.js';
 
 export async function processWebhook(
   provider: PaymentProvider,
@@ -9,29 +7,13 @@ export async function processWebhook(
   rawBody: unknown,
   headers: unknown,
 ) {
-  const webhookEvent = await prisma.webhookEvent.create({
-    data: {
-      provider,
-      eventType,
-      rawBody: rawBody as any,
-      headers: headers as any,
-      status: 'RECEIVED',
-    },
-  });
-
-  return webhookEvent;
+  return webhookRepo.createWebhookEvent(provider, eventType, rawBody, headers);
 }
 
 export async function markProcessed(id: string) {
-  await prisma.webhookEvent.update({
-    where: { id },
-    data: { status: 'PROCESSED', processedAt: new Date() },
-  });
+  await webhookRepo.markProcessed(id);
 }
 
 export async function markFailed(id: string, reason: string) {
-  await prisma.webhookEvent.update({
-    where: { id },
-    data: { status: 'FAILED', failureReason: reason },
-  });
+  await webhookRepo.markFailed(id, reason);
 }

@@ -1,10 +1,8 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { prisma } from '../../lib/prisma.js';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateTransactionInput } from '../../types/index.js';
-import { assertCanTransition } from './transaction.state.js';
 import { NotFoundError } from '../../utils/errors.js';
-
-const prisma = new PrismaClient();
 
 export async function createTransaction(input: CreateTransactionInput) {
   const reference = `TXN-${Date.now()}-${uuidv4().slice(0, 8)}`;
@@ -111,7 +109,7 @@ export async function updateTransactionStatus(
     where: { id: transactionId },
     data: {
       status: newStatus as any,
-      ...extra as any,
+      ...(extra as any),
       ...(newStatus === 'SUCCESS' ? { completedAt: new Date() } : {}),
       statusHistory: {
         create: {

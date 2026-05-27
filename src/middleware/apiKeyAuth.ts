@@ -1,10 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import { ForbiddenError, AuthError } from '../utils/errors.js';
 import { JwtPayload } from '../types/index.js';
-
-const prisma = new PrismaClient();
 
 export async function apiKeyAuth(req: Request, _res: Response, next: NextFunction): Promise<void> {
   const apiKey = req.headers['x-api-key'] as string;

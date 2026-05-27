@@ -1,16 +1,13 @@
-import Redis from 'ioredis';
+import { redis } from '../../lib/redis.js';
 import { CurrencyCode } from '../../types/enums.js';
-import { getConfig } from '../../config/index.js';
 import { ValidationError } from '../../utils/errors.js';
-import * as rateRepo from './rates.repository.js';
-
-const redis = new Redis(getConfig().REDIS_URL);
+import * as ratesRepo from './rates.repository.js';
 
 const QUOTE_TTL = 30;
 const PLATFORM_FEE_PERCENT = 0.01;
 
 export async function getQuote(from: CurrencyCode, to: CurrencyCode, amount: number) {
-  const rate = await rateRepo.getRate(from, to);
+  const rate = await ratesRepo.getRate(from, to);
   if (!rate) {
     throw new ValidationError(`Exchange rate not available for ${from}->${to}`);
   }
@@ -42,9 +39,9 @@ export async function confirmQuote(quoteId: string) {
 }
 
 export async function getAllRates() {
-  return rateRepo.getAllRates();
+  return ratesRepo.getAllRates();
 }
 
 export async function getPairRate(from: CurrencyCode, to: CurrencyCode) {
-  return rateRepo.getRate(from, to);
+  return ratesRepo.getRate(from, to);
 }
