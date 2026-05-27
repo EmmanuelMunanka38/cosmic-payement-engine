@@ -59,6 +59,11 @@ export enum PaymentProvider {
   FLUTTERWAVE = 'FLUTTERWAVE',
 }
 
+export enum Environment {
+  SANDBOX = 'SANDBOX',
+  PRODUCTION = 'PRODUCTION',
+}
+
 export enum WebhookEventStatus {
   RECEIVED = 'RECEIVED',
   PROCESSING = 'PROCESSING',
