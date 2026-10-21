@@ -140,7 +140,7 @@ Then use {{idem_key}} in the header.
     }
   }
 
-  ⚠️ Save the accessToken and refreshToken for subsequent requests.
+  Save the accessToken and refreshToken for subsequent requests.
   In Postman, set in Tests tab:
     var json = pm.response.json();
     pm.collectionVariables.set("token", json.data.accessToken);
@@ -171,7 +171,7 @@ Then use {{idem_key}} in the header.
     }
   }
 
-  ⚠️ Update Postman variables (token, refresh_token) from response.
+  Update Postman variables (token, refresh_token) from response.
 
 
 ====================================================================
@@ -301,7 +301,7 @@ Then use {{idem_key}} in the header.
     }
   }
 
-  ⚠️ Save wallet ID: pm.collectionVariables.set("wallet_id", json.data.id);
+  Save wallet ID: pm.collectionVariables.set("wallet_id", json.data.id);
 
 
 ====================================================================
@@ -411,8 +411,8 @@ Then use {{idem_key}} in the header.
   14. TRANSACTIONS — SEND (Internal)
 ====================================================================
 
-  ⚠️ Requires: Idempotency-Key header
-  ⚠️ Requires: Both sender and recipient must have wallets in
+  Requires: Idempotency-Key header
+  Requires: Both sender and recipient must have wallets in
                the same currency. Recipient must exist.
 
   POST  {{base_url}}/api/v1/transactions/send
@@ -452,7 +452,7 @@ Then use {{idem_key}} in the header.
     }
   }
 
-  ⚠️ Save transaction ID:
+  Save transaction ID:
     pm.collectionVariables.set("txn_id", json.data.id);
 
 
@@ -460,7 +460,7 @@ Then use {{idem_key}} in the header.
   15. TRANSACTIONS — CROSS-BORDER SEND
 ====================================================================
 
-  ⚠️ Requires: Idempotency-Key header
+  Requires: Idempotency-Key header
 
   POST  {{base_url}}/api/v1/transactions/cross-border
   Authorization: Bearer {{token}}
@@ -489,7 +489,7 @@ Then use {{idem_key}} in the header.
   16. TRANSACTIONS — PAY IN (Card Top-Up)
 ====================================================================
 
-  ⚠️ Requires: Idempotency-Key header
+  Requires: Idempotency-Key header
 
   POST  {{base_url}}/api/v1/transactions/pay-in
   Authorization: Bearer {{token}}
@@ -525,8 +525,8 @@ Then use {{idem_key}} in the header.
   17. TRANSACTIONS — PAY OUT
 ====================================================================
 
-  ⚠️ Requires: Idempotency-Key header
-  ⚠️ Requires: Sufficient wallet balance
+  Requires: Idempotency-Key header
+  Requires: Sufficient wallet balance
 
   POST  {{base_url}}/api/v1/transactions/pay-out
   Authorization: Bearer {{token}}
@@ -654,8 +654,8 @@ Then use {{idem_key}} in the header.
   23. PAYOUTS — CREATE
 ====================================================================
 
-  ⚠️ Requires: Idempotency-Key header
-  ⚠️ Requires: Sufficient wallet balance
+   Requires: Idempotency-Key header
+  Requires: Sufficient wallet balance
 
   POST  {{base_url}}/api/v1/payouts
   Authorization: Bearer {{token}}
@@ -774,7 +774,7 @@ Then use {{idem_key}} in the header.
   27. ADMIN — LIST USERS
 ====================================================================
 
-  ⚠️ Requires: ADMIN or SUPER_ADMIN role
+  Requires: ADMIN or SUPER_ADMIN role
 
   GET  {{base_url}}/api/v1/admin/users
   Authorization: Bearer {{token}}
@@ -793,7 +793,7 @@ Then use {{idem_key}} in the header.
   28. ADMIN — LIST TRANSACTIONS
 ====================================================================
 
-  ⚠️ Requires: ADMIN or SUPER_ADMIN role
+  Requires: ADMIN or SUPER_ADMIN role
 
   GET  {{base_url}}/api/v1/admin/transactions
   Authorization: Bearer {{token}}
@@ -814,7 +814,7 @@ Then use {{idem_key}} in the header.
   29. ADMIN — STATS
 ====================================================================
 
-  ⚠️ Requires: ADMIN or SUPER_ADMIN role
+  Requires: ADMIN or SUPER_ADMIN role
 
   GET  {{base_url}}/api/v1/admin/stats
   Authorization: Bearer {{token}}
@@ -836,8 +836,8 @@ Then use {{idem_key}} in the header.
   30. ADMIN — APPROVE TRANSACTION
 ====================================================================
 
-  ⚠️ Requires: ADMIN or SUPER_ADMIN role
-  ⚠️ Requires: Idempotency-Key header
+  Requires: ADMIN or SUPER_ADMIN role
+  Requires: Idempotency-Key header
 
   POST  {{base_url}}/api/v1/admin/transactions/{{txn_id}}/approve
   Authorization: Bearer {{token}}
@@ -858,8 +858,8 @@ Then use {{idem_key}} in the header.
   31. ADMIN — REJECT TRANSACTION
 ====================================================================
 
-  ⚠️ Requires: ADMIN or SUPER_ADMIN role
-  ⚠️ Requires: Idempotency-Key header
+  Requires: ADMIN or SUPER_ADMIN role
+  Requires: Idempotency-Key header
 
   POST  {{base_url}}/api/v1/admin/transactions/{{txn_id}}/reject
   Authorization: Bearer {{token}}
@@ -879,7 +879,7 @@ Then use {{idem_key}} in the header.
   32. ADMIN — UPDATE KYC STATUS
 ====================================================================
 
-  ⚠️ Requires: ADMIN or SUPER_ADMIN role
+  Requires: ADMIN or SUPER_ADMIN role
 
   PATCH  {{base_url}}/api/v1/admin/users/{{user_id}}/kyc-status
   Authorization: Bearer {{token}}
@@ -908,7 +908,7 @@ Then use {{idem_key}} in the header.
   33. API KEYS — CREATE
 ====================================================================
 
-  ⚠️ The full API key is returned ONCE only. Save it immediately.
+  The full API key is returned ONCE only. Save it immediately.
 
   POST  {{base_url}}/api/v1/api-keys
   Authorization: Bearer {{token}}
@@ -934,7 +934,7 @@ Then use {{idem_key}} in the header.
     }
   }
 
-  ⚠️ SAVE the apiKey value! It will not be shown again.
+  SAVE the apiKey value! It will not be shown again.
   In Postman, set: pm.collectionVariables.set("api_key", json.data.apiKey);
 
 
@@ -1046,8 +1046,8 @@ Then use {{idem_key}} in the header.
     }
   }
 
-  ⚠️ Save the sandbox API key:
-    pm.collectionVariables.set("sandbox_api_key", json.data.apiKey);
+ Save the sandbox API key:
+ pm.collectionVariables.set("sandbox_api_key", json.data.apiKey);
 
 
 --------------------------------------------------------------------

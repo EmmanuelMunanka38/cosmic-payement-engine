@@ -248,3 +248,11 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 ## Security
 
 Found a security issue? Please do **not** open a public issue. Report it privately to the maintainers so it can be addressed responsibly before disclosure.
+
+---
+
+## Support
+
+If Cosmic Payment has saved you time, money, or a headache — consider dropping me a tip. It keeps the coffee flowing and the code shipping. ☕
+
+[![Drop Me a Tip](public/images/Drop%20Me%20a%20Tip%20in%20Blue%20Script.png)](https://www.dropmeatip.co.tz/user/emmdev)
