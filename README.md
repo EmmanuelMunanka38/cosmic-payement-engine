@@ -255,4 +255,8 @@ Found a security issue? Please do **not** open a public issue. Report it private
 
 If Cosmic Payment has saved you time, money, or a headache — consider dropping me a tip. It keeps the coffee flowing and the code shipping. ☕
 
-[![Drop Me a Tip](public/images/Drop%20Me%20a%20Tip%20in%20Blue%20Script.png)](https://www.dropmeatip.co.tz/user/emmdev)
+<a href="https://www.dropmeatip.co.tz/user/emmdev">
+  <img src="public/images/Drop%20Me%20a%20Tip%20in%20Blue%20Script.png" alt="Drop Me a Tip" width="180" />
+</a>
+
+Every tip goes directly toward keeping this project open source, well-maintained, and free for developers across Africa and beyond. Your support helps cover infrastructure, testing, and the countless hours that go into building a reliable cross-border payment gateway.
