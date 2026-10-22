@@ -1,0 +1,215 @@
+This docs explains the whole project and future features to be added in the project.
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+Cosmic Payment is a cross-border payment gateway for Africa. It combines the
+power of Nala, Stripe, and Mobile Money into a single, open-source platform.
+
+The goal is to let the African diaspora send money home with a card, handle the
+FX conversion automatically, and deliver funds directly to a recipient's mobile
+money wallet (M-Pesa, MTN MoMo, Airtel Money, Orange Money, Wave).
+
+It is a modular monolith built in TypeScript, designed to be self-hosted,
+extended, and contributed to by developers around the world.
+
+--------------------------------------------------------------------------------
+1.1 Why Cosmic Payment?
+--------------------------------------------------------------------------------
+
+Sending money across borders in Africa is fragmented. Every country has its own
+mobile money rails, every provider has its own API, and FX conversion is often
+opaque. Cosmic Payment unifies all of that behind one clean API:
+
+  - One integration, many rails - card payments via Stripe, payouts via 5+
+    mobile money providers.
+  - Transparent FX - real-time rates with bid/ask spreads, locked quotes, and
+    full auditability.
+  - Built for scale - optimistic-locking wallets, idempotent money movement,
+    and BullMQ-backed async processing.
+  - Sandbox-first - a fully isolated sandbox environment so you can test
+    end-to-end without touching real money.
+
+================================================================================
+2. TECH STACK
+================================================================================
+
+  - Runtime:      Node.js 20+, TypeScript 5 (strict mode)
+  - Framework:    Express.js
+  - ORM / DB:     Prisma + PostgreSQL
+  - Cache/Queue:  Redis + BullMQ
+  - Validation:   Zod
+  - Auth:         JWT + bcrypt + OTP (TOTP)
+  - Payments:     Stripe SDK (abstracted behind a CardProvider)
+  - Mobile Money: Custom adapters per provider
+  - Logging:      Pino
+  - Testing:      Vitest + Supertest
+  - Docs:         Swagger / OpenAPI
+
+================================================================================
+3. CURRENT FEATURES
+================================================================================
+
+  - Multi-currency wallets (USD, EUR, GBP, KES, NGN, UGX, GHS, TZS, XAF, XOF,
+    RWF, ZMW, MAD, ZAR).
+  - Cross-border send: card (Stripe) -> FX conversion -> mobile money payout,
+    fully automated.
+  - Wallet-to-wallet transfers: atomic, optimistic-locked, same-currency.
+  - Mobile money top-up via STK Push / collection requests.
+  - Provider auto-detection from the recipient's phone number prefix.
+  - Idempotent money movement (every POST that moves money requires an
+    Idempotency-Key).
+  - KYC document upload and verification workflow.
+  - B2B API keys (scoped, hashed, environment-aware).
+  - Webhooks (signed provider callbacks with async delivery and retries).
+  - Admin dashboard API (user, transaction, and provider management).
+  - Sandbox isolation (separate database where payouts auto-succeed).
+  - 2FA (TOTP-based two-factor authentication).
+
+--------------------------------------------------------------------------------
+3.1 Supported Providers
+--------------------------------------------------------------------------------
+
+  - Stripe       (Card)         - Global card payments
+  - M-Pesa       (Mobile Money) - Kenya, Tanzania
+  - MTN MoMo     (Mobile Money) - Uganda, Ghana, Rwanda, 12+ countries
+  - Airtel Money (Mobile Money) - Kenya, Uganda, Tanzania, Nigeria
+  - Orange Money (Mobile Money) - 17 Francophone countries
+  - Wave         (Mobile Money) - Senegal, Ivory Coast, Mali
+
+================================================================================
+4. PROJECT STRUCTURE
+================================================================================
+
+  src/
+    config/          - app config, logger, swagger setup
+    lib/             - prisma, redis, shared clients
+    middleware/      - auth, apiKeyAuth, idempotency, rateLimiter, validate, etc.
+    jobs/            - BullMQ queues and workers (payout settlement, rate
+                       refresh, transaction timeout, webhook delivery)
+    modules/
+      auth/          - register, login, refresh, 2FA
+      users/         - user profile
+      wallets/       - multi-currency wallets
+      transactions/  - send, cross-border, pay-in/out
+      exchangeRates/ - FX rates and quotes
+      payouts/       - mobile money payouts
+      kyc/           - KYC documents
+      admin/         - admin dashboard
+      apiKeys/       - B2B API keys
+      webhooks/      - provider callbacks
+      sandbox/       - sandbox environment
+      ledger/        - ledger service
+      paymentProviders/ - provider adapters (stripe, mpesa, mtn, airtel,
+                          orange, wave) and provider registry
+    types/           - shared types and enums
+    utils/           - currency, errors, phone, pagination, response helpers
+
+================================================================================
+5. FUTURE FEATURES (ROADMAP)
+================================================================================
+
+We are going to refactor the code and make 3 main fintech features that include:
+
+  -> Cross-border payments
+  -> Blockchain rails
+  -> Mobile money
+  -> NFC payments
+
+--------------------------------------------------------------------------------
+5.1 Cross-border Payments
+--------------------------------------------------------------------------------
+
+  - Expand the existing card -> FX -> mobile money flow into a full remittance
+    product.
+  - Add more source currencies and payout corridors.
+  - Support bank account payouts in addition to mobile money.
+  - Scheduled / recurring transfers.
+  - Multi-leg routing and provider failover.
+
+--------------------------------------------------------------------------------
+5.2 Blockchain Rails
+--------------------------------------------------------------------------------
+
+  - Add stablecoin (USDC/USDT) on/off-ramps as an alternative settlement rail.
+  - Support crypto-to-mobile-money and mobile-money-to-crypto conversions.
+  - On-chain transaction tracking and confirmation handling.
+  - Custody / wallet abstraction for self-hosted deployments.
+
+--------------------------------------------------------------------------------
+5.3 Mobile Money
+--------------------------------------------------------------------------------
+
+  - Deepen existing mobile money support with more providers and countries.
+  - Add collection (pay-in) flows beyond STK Push.
+  - Bill payments and airtime top-up.
+  - Merchant payments (till / paybill).
+
+--------------------------------------------------------------------------------
+5.4 NFC Payments
+--------------------------------------------------------------------------------
+
+  - Contactless card / NFC tap-to-pay support.
+  - NFC-based merchant acceptance and in-person payments.
+  - Integration with card-present terminals and mobile NFC readers.
+
+================================================================================
+6. GETTING STARTED
+================================================================================
+
+  Prerequisites: Node.js 20+, Docker & Docker Compose, npm
+
+  1. Clone & install:
+       git clone https://github.com/your-org/cosmic-payment.git
+       cd cosmic-payment
+       cp .env.example .env
+
+  2. Start infrastructure (PostgreSQL and Redis):
+       docker compose up -d
+
+  3. Install dependencies, migrate, and seed:
+       npm run setup
+
+  4. Start the dev server:
+       npm run dev
+
+  The API runs at http://localhost:3000. Swagger docs are at /api-docs.
+
+--------------------------------------------------------------------------------
+6.1 Test Credentials (seeded locally)
+--------------------------------------------------------------------------------
+
+  Admin: admin@cosmic-payment.dev / admin123
+  User:  user@cosmic-payment.dev  / user123
+
+================================================================================
+7. TESTING
+================================================================================
+
+  npm test              - run the full test suite
+  npm run test:watch    - watch mode
+  npm run test:coverage - coverage report
+  npm run lint          - lint
+  npm run format        - format
+
+================================================================================
+8. CONTRIBUTING
+================================================================================
+
+  - Find or open an issue (bugs, features, provider integrations).
+  - Fork the repo and create a feature branch.
+  - Follow the conventions in AGENTS.md.
+  - Add tests for any new behavior.
+  - Open a pull request with a clear description of why the change matters.
+
+  Good first contributions:
+    - Add a new mobile money provider adapter (implement MobileMoneyProvider).
+    - Improve FX rate sourcing or add a new rate provider.
+    - Expand test coverage in any module.
+    - Improve documentation and API examples.
+
+  Commit convention (Conventional Commits):
+    <type>(<scope>): <description>
+    e.g. feat(providers): add Wave mobile money adapter
+         fix(wallets): prevent negative balance on concurrent transfers

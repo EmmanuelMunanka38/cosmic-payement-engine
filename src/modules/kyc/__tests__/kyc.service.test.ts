@@ -13,6 +13,13 @@ vi.mock('@prisma/client', () => ({
   })),
 }));
 
+/*user interface {
+  id:number ,
+  email:string ,
+  phone:sting?,
+  kycStatus:string?
+  //this interface is passed on the test apis for kyc test .
+}*/
 const mockUser = {
   id: 'user-1',
   email: 'test@example.com',
@@ -54,7 +61,7 @@ describe('KYCService — submitKyc', () => {
     expect(kycRepo.updateUserKycStatus).toHaveBeenCalledWith('user-1', 'PENDING');
     expect(result).toEqual(mockDocument);
   });
-
+  // changing the ky test part for different countries that are able to be given service by the plform 
   it('throws NotFoundError when user does not exist', async () => {
     vi.mocked(kycRepo.findUserById).mockResolvedValue(null);
 
@@ -90,8 +97,7 @@ describe('KYCService — getKycStatus', () => {
 
 describe('KYCService — updateKycStatus', () => {
   it('updates user KYC status to VERIFIED and approves documents', async () => {
-    vi.mocked(kycRepo.findUserById).mockResolvedValue(mockUser);
-
+    vi.mocked(kycRepo.findUserById).mockResolvedValue(mockUser)
     await kycService.updateKycStatus('user-1', 'VERIFIED');
 
     expect(kycRepo.updateUserKycStatus).toHaveBeenCalledWith('user-1', 'VERIFIED');
